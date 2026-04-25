@@ -536,6 +536,19 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 </div>
 
 <script>
+// ── AUTO-SETUP via URL hash (#setup?ap=APIFY&ao=APOLLO) ──────────────────────
+(function() {
+  const h = location.hash;
+  if (h.startsWith('#setup?')) {
+    const p = new URLSearchParams(h.slice(7));
+    const store = JSON.parse(localStorage.getItem('hl_store')||'{}');
+    if (p.get('ap')) store.apifyToken = p.get('ap');
+    if (p.get('ao')) store.apolloKey  = p.get('ao');
+    localStorage.setItem('hl_store', JSON.stringify(store));
+    history.replaceState(null, '', location.pathname); // limpiar hash de URL
+  }
+})();
+
 // ── PINS (hashed — no plaintext credentials in source) ───────────────────────
 const PIN_HASHES = {
   'b858460b54cc28b3e4e9c5f50b36baf44ccec41b1051d4a9f9ff662e194e6257': 'Cecilia',
