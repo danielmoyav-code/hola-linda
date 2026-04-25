@@ -387,8 +387,8 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
             <input id="apollo-inp" class="inp" type="password" placeholder="tu-apollo-api-key">
             <div style="font-size:10px;color:var(--g4);margin-top:3px">→ app.apollo.io → Settings → Integrations → API</div>
             <span class="fl" style="margin-top:10px">🔀 Proxy URL <span style="font-weight:400;color:var(--g4)">(opcional)</span></span>
-            <input id="apollo-proxy-inp" class="inp" type="text" placeholder="http://localhost:3000/proxy/apollo">
-            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ Deja vacío si usas extensión CORS · Llena si ejecutas el servidor proxy local</div>
+            <input id="apollo-proxy-inp" class="inp" type="text" placeholder="(automático según el entorno)">
+            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ Dejar vacío — la app elige el proxy automáticamente</div>
             <button onclick="saveKeys()" class="btn btn-dk" style="margin-top:14px">💾 Guardar Configuración</button>
           </div>
         </div>
@@ -581,9 +581,9 @@ if (S.weekKey !== wk) {
         prospects:S.prospects||[], weekKey:wk, visitas:0, maquinas:0, prospectos:0, dms:0, checklist:[] };
   save(S);
 }
-S.apifyToken  = S.apifyToken||'';
-S.apolloKey   = S.apolloKey||'';
-S.apolloProxy = S.apolloProxy||'';
+S.apifyToken  = S.apifyToken  || '';
+S.apolloKey   = S.apolloKey   || '';
+S.apolloProxy = S.apolloProxy || '';
 S.prospects   = S.prospects||[];
 S.checklist   = S.checklist||[];
 
@@ -1280,7 +1280,9 @@ async function runApollo() {
   try {
     const body = { api_key:key, q_organization_name:emp, page:1, per_page:10 };
     if (dom) body.q_organization_domains=[dom];
-    const proxyBase = (S.apolloProxy || '/proxy/apollo').replace(/\/$/, '');
+    const isLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
+    const defaultProxy = isLocal ? '/proxy/apollo' : 'https://corsproxy.io/?https://api.apollo.io';
+    const proxyBase = (S.apolloProxy || defaultProxy).replace(/\/$/, '');
     const apolloUrl = proxyBase + '/v1/mixed_people/search';
     const res = await fetch(apolloUrl, {
       method:'POST',
@@ -1297,8 +1299,7 @@ async function runApollo() {
     const msg = e.message||'';
     const isCors = msg.includes('fetch')||msg.includes('NetworkError')||msg.includes('Failed to fetch');
     document.getElementById('apollo-err').innerHTML = isCors
-      ? `⚠️ <strong>Error de conexión con el proxy</strong>.<br>El servidor proxy no está activo. Inícialo con:<br>
-         <code style="background:var(--g2);padding:2px 6px;border-radius:4px;font-size:11px">python proxy_server.py</code>`
+      ? `⚠️ <strong>Error de conexión</strong>.<br>Revisa tu conexión a internet e intenta nuevamente.`
       : esc(msg);
     document.getElementById('apollo-err').style.display='block';
   } finally {
