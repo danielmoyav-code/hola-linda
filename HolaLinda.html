@@ -1162,9 +1162,9 @@ async function runMapsSearch(tipo, zona) {
   if (!token) { setSrcBadge('maps','⚠ Sin API Key',false); return; }
   try {
     const query  = `${tipo} ${zona} Chile`;
-    const body   = { searchStringsArray:[query], maxCrawledPlacesPerSearch:20, language:'es', countryCode:'CL' };
+    const body   = { searchStringsArray:[query], maxCrawledPlacesPerSearch:20, language:'es', countryCode:'cl' };
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/nwua9Gu5YkAT5Htz3/runs?token=${encodeURIComponent(token)}&waitForFinish=90`,
+      `https://api.apify.com/v2/acts/compass~crawler-google-places/runs?token=${encodeURIComponent(token)}&waitForFinish=120`,
       { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
     );
     if (!runRes.ok) throw new Error('HTTP '+runRes.status);
