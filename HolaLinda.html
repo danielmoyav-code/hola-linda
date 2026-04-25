@@ -222,6 +222,40 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 .wrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 .loc-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.3);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:var(--dk);border:none;cursor:pointer;margin-top:6px;max-width:100%}
 .loc-pill:active{background:rgba(255,255,255,.5)}
+
+/* ── HUB PROSPECTOS ─────────────────── */
+.src-toggle{padding:6px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s}
+.src-toggle.on{background:var(--dk);color:var(--w);border-color:var(--dk)}
+.src-toggle:active{transform:scale(.93)}
+.ftag{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.ftag.on{background:var(--dk);color:var(--w);border-color:var(--dk)}
+.fbadge{background:rgba(255,255,255,.18);border-radius:10px;padding:0 5px;font-size:9px;line-height:1.5}
+.ftag:not(.on) .fbadge{background:var(--g2);color:var(--g5)}
+.src-badge{font-size:9px;padding:2px 7px;border-radius:8px;white-space:nowrap;font-weight:700;flex-shrink:0}
+.src-badge.maps{background:#e0f2fe;color:#0369a1}
+.src-badge.ml{background:#fff7ed;color:#c2410c}
+.src-badge.apollo{background:#f5f3ff;color:#7c3aed}
+.src-badge.manual{background:#f0fdf4;color:#15803d}
+.dq{display:flex;gap:5px;margin:5px 0 2px}
+.dq .dqi{font-size:13px;transition:opacity .15s}
+.hub-prog-box{background:var(--g1);border-radius:14px;padding:16px;text-align:center}
+.src-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.rc{background:var(--w);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border:1.5px solid transparent;transition:border-color .15s}
+.rc.selected{border-color:var(--b);background:#f0f9ff}
+.rc h3{font-size:13px;font-weight:800;color:var(--dk);margin:0 0 4px}
+.tag{display:inline-block;background:var(--g1);color:var(--g5);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:600;margin-bottom:4px}
+.det{font-size:11px;color:var(--g5);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ract{padding:6px 10px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:transform .1s;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+.ract:active{transform:scale(.93)}
+.ract.wa{background:#25D366;color:#fff}
+.ract.call{background:#e0f2fe;color:#0369a1}
+.ract.maps{background:#fef3c7;color:#b45309}
+.ract.li{background:#e0e7ff;color:#4338ca}
+.ract.save{background:var(--g1);color:var(--g5);border:1.5px solid var(--g2)}
+.ract.saved{background:#fef9c3;color:#854d0e;border-color:#fde68a}
+.aav{width:36px;height:36px;border-radius:50%;background:var(--b);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.enrich-row{margin-top:6px;padding:8px;background:var(--g1);border-radius:10px;font-size:11px;color:var(--dk)}
 </style>
 </head>
 <body>
@@ -367,75 +401,81 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 
     <!-- ══ BUSCAR ══ -->
     <div id="s-buscar" class="scr">
-      <div class="hdr-dk"><div class="hdr-h1" style="color:var(--w)">🔍 Buscar Clientes IA</div><div class="hdr-sub" style="color:var(--g4)">Google Maps · Apollo.io · Prospectos en segundos</div></div>
+      <div class="hdr-dk">
+        <div class="hdr-h1" style="color:var(--w)">🎯 Hub de Prospectos IA</div>
+        <div class="hdr-sub" style="color:var(--g4)">Google Maps · MercadoLibre · Apollo · Manual</div>
+      </div>
       <div class="sc">
-        <!-- Config panel -->
-        <div class="cfg-panel">
+
+        <!-- Unified Search Card -->
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:800;color:var(--dk);margin-bottom:10px">🔍 Búsqueda unificada</div>
+          <input id="hub-tipo" class="inp" placeholder="Tipo de negocio (ej: Peluquería, Café, Ferretería...)" style="margin-bottom:8px">
+          <div class="inp-row" style="margin-bottom:10px">
+            <input id="hub-zona" class="inp" placeholder="Zona o ciudad (ej: Providencia, Santiago)">
+            <button onclick="getGPS('hub-zona')" title="Usar mi ubicación" style="background:var(--b);color:#fff;padding:0 14px;border-radius:10px;flex-shrink:0;font-size:16px;border:none;cursor:pointer">📍</button>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">Fuentes activas:</div>
+          <div class="src-row">
+            <button class="src-toggle on" id="tog-maps"   onclick="toggleSource('maps')">🗺️ Google Maps</button>
+            <button class="src-toggle on" id="tog-ml"     onclick="toggleSource('ml')">🛒 MercadoLibre</button>
+            <button class="src-toggle"    id="tog-apollo" onclick="toggleSource('apollo')">🚀 Apollo.io</button>
+          </div>
+          <button id="hub-btn" onclick="runHubSearch()" class="btn btn-dk" style="margin-bottom:8px">🔍 Buscar en todas las fuentes</button>
+          <button onclick="showAddManual()" class="btn" style="background:var(--g1);color:var(--dk);border:1.5px solid var(--g2)">✏️ Agregar prospecto (en terreno)</button>
+        </div>
+
+        <!-- API Config (collapsed) -->
+        <div class="cfg-panel" style="margin-bottom:12px">
           <div class="cfg-head" onclick="toggleCfg()">
             <div style="display:flex;align-items:center;gap:8px">
               <span>⚙️</span>
-              <span style="font-size:13px;font-weight:800;color:var(--dk)">Configuración API Keys</span>
+              <span style="font-size:13px;font-weight:800;color:var(--dk)">API Keys</span>
               <span id="cfg-st" class="cst nd">Pendiente</span>
             </div>
             <span id="cfg-chev" class="chev">▼</span>
           </div>
           <div class="cfg-body" id="cfg-body">
-            <span class="fl">Apify API Token</span>
+            <span class="fl">Apify Token <span style="color:var(--g4);font-weight:400">(Maps · Instagram)</span></span>
             <input id="apify-inp" class="inp" type="password" placeholder="apify_api_XXXXXXXXXX">
-            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ console.apify.com → Account → Integrations</div>
-            <span class="fl">Apollo.io API Key</span>
+            <div style="font-size:10px;color:var(--g4);margin-top:2px">→ console.apify.com → Account → Integrations</div>
+            <span class="fl" style="margin-top:10px">Apollo.io API Key <span style="color:var(--g4);font-weight:400">(Decisores · emails)</span></span>
             <input id="apollo-inp" class="inp" type="password" placeholder="tu-apollo-api-key">
-            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ app.apollo.io → Settings → Integrations → API</div>
-            <span class="fl" style="margin-top:10px">🔀 Proxy URL <span style="font-weight:400;color:var(--g4)">(opcional)</span></span>
-            <input id="apollo-proxy-inp" class="inp" type="text" placeholder="(automático según el entorno)">
-            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ Dejar vacío — la app elige el proxy automáticamente</div>
-            <button onclick="saveKeys()" class="btn btn-dk" style="margin-top:14px">💾 Guardar Configuración</button>
+            <div style="font-size:10px;color:var(--g4);margin-top:2px">→ app.apollo.io → Settings → Integrations → API</div>
+            <button onclick="saveKeys()" class="btn btn-dk" style="margin-top:14px">💾 Guardar configuración</button>
           </div>
         </div>
-        <!-- Toggle -->
-        <div class="ttgl" style="margin-bottom:14px">
-          <div id="tt-apify" class="ttbtn on" onclick="setSection('apify')">🗺️ Google Maps</div>
-          <div id="tt-apollo" class="ttbtn" onclick="setSection('apollo')">🚀 Apollo.io</div>
-        </div>
-        <!-- Apify section -->
-        <div id="sec-apify">
-          <div class="card" style="margin-bottom:14px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <span style="font-size:18px">🗺️</span>
-              <div><div style="font-size:13px;font-weight:800;color:var(--dk)">Buscador Google Maps</div><div style="font-size:10px;color:var(--g4)">Vía Apify · Negocios en tu zona</div></div>
-            </div>
-            <input id="tipo-inp" class="inp" placeholder="Tipo de negocio (ej: Peluquería, Café, Ferretería)" style="margin-bottom:8px">
-            <div class="inp-row">
-              <input id="zona-inp" class="inp" placeholder="Zona o ciudad (ej: Providencia)">
-              <button onclick="getGPS('zona-inp')" title="Detectar ubicación actual" style="background:var(--b);color:#fff;padding:0 12px;border-radius:10px;flex-shrink:0;font-size:16px">📍</button>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-              <button id="apify-btn" onclick="runApify()" class="btn btn-bl">🔍 Buscar</button>
-              <button onclick="runApifyNearMe()" class="btn" style="background:#eff6ff;color:var(--b);border:1.5px solid #bfdbfe">📍 Cerca de mí</button>
-            </div>
+
+        <!-- Progress indicator -->
+        <div id="hub-progress" style="display:none;margin-bottom:12px">
+          <div class="hub-prog-box">
+            <div id="hub-spin" style="font-size:24px;margin-bottom:6px">⏳</div>
+            <div id="hub-status" style="font-size:13px;font-weight:800;color:var(--dk)">Iniciando búsqueda...</div>
+            <div id="hub-sub" style="font-size:11px;color:var(--g4);margin-top:4px;min-height:16px"></div>
+            <div id="hub-sources-progress" style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap"></div>
           </div>
-          <div id="apify-err" class="err-box" style="display:none;margin-bottom:14px"></div>
-          <div id="apify-loading" class="loading" style="display:none"><span class="spin">⏳</span> Buscando... puede tomar hasta 90 segundos</div>
-          <div id="apify-sel-summary" style="display:none;font-size:11px;font-weight:700;color:var(--b);margin-bottom:8px;padding:0 2px"></div>
-          <div id="apify-results"></div>
         </div>
-        <!-- Apollo section -->
-        <div id="sec-apollo" style="display:none">
-          <div class="card" style="margin-bottom:14px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <span style="font-size:18px">🚀</span>
-              <div><div style="font-size:13px;font-weight:800;color:var(--dk)">Enriquecimiento Apollo.io</div><div style="font-size:10px;color:var(--g4)">Decisores · LinkedIn · Emails</div></div>
-            </div>
-            <input id="emp-inp" class="inp" placeholder="Nombre de empresa (ej: Café El Barista)" style="margin-bottom:8px">
-            <input id="dom-inp" class="inp" placeholder="Dominio web (opcional, ej: elbarista.cl)" style="margin-bottom:10px">
-            <div style="font-size:10px;color:var(--g4);background:var(--g1);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6">💡 <strong>Tip</strong>: Busca por nombre de la empresa que encontraste en Maps para ver quiénes son los dueños o gerentes</div>
-            <button id="apollo-btn" onclick="runApollo()" class="btn btn-dk">🚀 Buscar Contactos Decisores</button>
+
+        <!-- Filter bar -->
+        <div id="hub-filter-bar" style="display:none;margin-bottom:10px">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            <button class="ftag on" id="ft-all"    onclick="setHubFilter('all')">Todos <span id="fc-all" class="fbadge">0</span></button>
+            <button class="ftag"    id="ft-maps"   onclick="setHubFilter('maps')">🗺️ Maps <span id="fc-maps" class="fbadge">0</span></button>
+            <button class="ftag"    id="ft-ml"     onclick="setHubFilter('ml')">🛒 ML <span id="fc-ml" class="fbadge">0</span></button>
+            <button class="ftag"    id="ft-apollo" onclick="setHubFilter('apollo')">🚀 Apollo <span id="fc-apollo" class="fbadge">0</span></button>
+            <button class="ftag"    id="ft-phone"  onclick="setHubFilter('phone')">📞 Con Tel <span id="fc-phone" class="fbadge">0</span></button>
           </div>
-          <div id="apollo-err" class="err-box" style="display:none;margin-bottom:14px"></div>
-          <div id="apollo-loading" class="loading" style="display:none"><span class="spin">⏳</span> Buscando contactos...</div>
-          <div id="apollo-sel-summary" style="display:none;font-size:11px;font-weight:700;color:var(--b);margin-bottom:8px;padding:0 2px"></div>
-          <div id="apollo-results"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
+            <span id="hub-summary" style="font-size:11px;color:var(--g5);font-weight:600"></span>
+            <button onclick="selectAllHubVisible()" style="font-size:11px;font-weight:700;color:var(--b);background:none;border:none;cursor:pointer">Sel. todos</button>
+          </div>
         </div>
+
+        <!-- Error -->
+        <div id="hub-err" class="err-box" style="display:none;margin-bottom:12px"></div>
+
+        <!-- Results -->
+        <div id="hub-results"></div>
       </div>
     </div>
 
@@ -516,6 +556,22 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
     <div class="macts">
       <button onclick="closeReset()" class="btn" style="border:2px solid var(--g2);color:var(--g5);flex:1">Cancelar</button>
       <button onclick="doReset()" class="btn" style="background:var(--red);color:var(--w);flex:1">Resetear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANUAL PROSPECT MODAL -->
+<div class="modal" id="manual-modal">
+  <div class="mbox" style="max-width:340px">
+    <h3>✏️ Agregar Prospecto</h3>
+    <p>Encontrado en terreno — completa los datos disponibles</p>
+    <input id="manual-name"  class="inp" placeholder="Nombre del local / persona *" style="margin-bottom:8px">
+    <input id="manual-phone" class="inp" type="tel" placeholder="Teléfono / WhatsApp" inputmode="numeric" style="margin-bottom:8px">
+    <input id="manual-cat"   class="inp" placeholder="Tipo (ej: Café, Peluquería...)" style="margin-bottom:8px">
+    <input id="manual-addr"  class="inp" placeholder="Dirección (auto-GPS si disponible)" style="margin-bottom:14px">
+    <div class="macts">
+      <button onclick="closeManual()" class="btn" style="border:2px solid var(--g2);color:var(--g5);flex:1">Cancelar</button>
+      <button onclick="saveManualProspect()" class="btn btn-g" style="flex:1">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -923,35 +979,434 @@ function doReset() {
 
 // ── CONFIG / KEYS ─────────────────────────────────────────────────────────────
 function loadKeys() {
-  document.getElementById('apify-inp').value = S.apifyToken||'';
+  document.getElementById('apify-inp').value  = S.apifyToken||'';
   document.getElementById('apollo-inp').value = S.apolloKey||'';
-  document.getElementById('apollo-proxy-inp').value = S.apolloProxy||'';
 }
 function saveKeys() {
-  S.apifyToken  = document.getElementById('apify-inp').value.trim();
-  S.apolloKey   = document.getElementById('apollo-inp').value.trim();
-  S.apolloProxy = document.getElementById('apollo-proxy-inp').value.trim();
+  S.apifyToken = document.getElementById('apify-inp').value.trim();
+  S.apolloKey  = document.getElementById('apollo-inp').value.trim();
   save(S); toast('Configuración guardada 💛');
   updateCfgStatus();
   document.getElementById('cfg-body').classList.remove('o');
   document.getElementById('cfg-chev').classList.remove('o');
 }
 function updateCfgStatus() {
-  const both = S.apifyToken && S.apolloKey;
+  const ok = S.apifyToken || S.apolloKey;
   const st = document.getElementById('cfg-st');
-  if(st) { st.className='cst '+(both?'ok':'nd'); st.textContent=both?'Listas ✓':'Pendiente'; }
+  if(st) { st.className='cst '+(ok?'ok':'nd'); st.textContent=ok?'Listas ✓':'Pendiente'; }
 }
 function toggleCfg() {
   document.getElementById('cfg-body').classList.toggle('o');
   document.getElementById('cfg-chev').classList.toggle('o');
 }
 
-// ── SECTION TOGGLE ────────────────────────────────────────────────────────────
-function setSection(s) {
-  document.getElementById('sec-apify').style.display  = s==='apify'  ? 'block':'none';
-  document.getElementById('sec-apollo').style.display = s==='apollo' ? 'block':'none';
-  document.getElementById('tt-apify').className  = 'ttbtn'+(s==='apify' ?' on':'');
-  document.getElementById('tt-apollo').className = 'ttbtn'+(s==='apollo'?' on':'');
+// ══════════════════════════════════════════════════════════════════════════════
+// HUB DE PROSPECTOS IA — Motor unificado
+// Fuentes: Google Maps (Apify) · MercadoLibre · Apollo.io · Manual
+// ══════════════════════════════════════════════════════════════════════════════
+
+let hubSources = { maps:true, ml:true, apollo:false };
+let hubResults  = [];   // resultados unificados
+let hubFilter   = 'all';
+let hubSel      = new Set();
+
+// ── Source toggle ─────────────────────────────────────────────────────────────
+function toggleSource(src) {
+  hubSources[src] = !hubSources[src];
+  document.getElementById('tog-'+src).classList.toggle('on', hubSources[src]);
+}
+
+// ── Main search orchestrator ──────────────────────────────────────────────────
+async function runHubSearch() {
+  const tipo = (document.getElementById('hub-tipo').value||'').trim();
+  const zona = (document.getElementById('hub-zona').value||'').trim();
+  if (!tipo) { toast('Ingresa el tipo de negocio 🔍','err'); return; }
+  if (!zona && hubSources.maps) { toast('Ingresa una zona para Maps 📍','err'); return; }
+
+  // Reset
+  hubResults=[]; hubSel.clear();
+  document.getElementById('hub-results').innerHTML='';
+  document.getElementById('hub-filter-bar').style.display='none';
+  document.getElementById('hub-err').style.display='none';
+  document.getElementById('hub-progress').style.display='block';
+  document.getElementById('hub-btn').disabled=true;
+  setHubStatus('Iniciando búsqueda en todas las fuentes...','');
+
+  // Source progress badges
+  const srcEl = document.getElementById('hub-sources-progress');
+  const activeSrcs = Object.entries(hubSources).filter(([,v])=>v).map(([k])=>k);
+  srcEl.innerHTML = activeSrcs.map(s=>`<span id="sp-${s}" style="font-size:10px;background:var(--g2);color:var(--g5);padding:3px 9px;border-radius:12px;font-weight:700">${{maps:'🗺️ Maps',ml:'🛒 ML',apollo:'🚀 Apollo'}[s]} ⏳</span>`).join('');
+
+  const promises = [];
+  if (hubSources.maps)   promises.push(runMapsSearch(tipo,zona));
+  if (hubSources.ml)     promises.push(runMLSearch(tipo,zona));
+  if (hubSources.apollo) promises.push(runApolloSearch(tipo,zona));
+
+  await Promise.allSettled(promises);
+
+  document.getElementById('hub-progress').style.display='none';
+  document.getElementById('hub-btn').disabled=false;
+
+  if (hubResults.length) {
+    document.getElementById('hub-filter-bar').style.display='block';
+    updateHubFilterCounts();
+    renderHubResults();
+  } else {
+    document.getElementById('hub-err').textContent='Sin resultados. Prueba con otro tipo o ciudad.';
+    document.getElementById('hub-err').style.display='block';
+  }
+}
+
+function setHubStatus(msg, sub) {
+  const s=document.getElementById('hub-status'), b=document.getElementById('hub-sub');
+  if(s) s.textContent=msg; if(b) b.textContent=sub;
+}
+function setSrcBadge(src, txt, ok) {
+  const el=document.getElementById('sp-'+src);
+  if(!el) return;
+  el.style.background = ok ? '#dcfce7' : '#fee2e2';
+  el.style.color = ok ? '#15803d' : '#991b1b';
+  el.textContent = ({maps:'🗺️ Maps',ml:'🛒 ML',apollo:'🚀 Apollo'}[src]||src)+' '+txt;
+}
+
+function addHubResults(results, source) {
+  let added=0;
+  results.forEach(r => {
+    const phone = (r.phone||'').replace(/\D/g,'').replace(/^0+/,'');
+    // Deduplicate by normalized phone
+    if (phone && hubResults.some(x=>(x.phone||'').replace(/\D/g,'').replace(/^0+/,'').replace(/^56/,'') === phone.replace(/^56/,''))) return;
+    const id = source+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'_'+(added++);
+    hubResults.unshift({...r, _source:source, _id:id});
+  });
+  if (hubResults.length) {
+    document.getElementById('hub-filter-bar').style.display='block';
+    updateHubFilterCounts();
+    renderHubResults();
+  }
+}
+
+// ── Google Maps via Apify ─────────────────────────────────────────────────────
+async function runMapsSearch(tipo, zona) {
+  setHubStatus(`🗺️ Buscando en Google Maps...`, tipo+' · '+zona);
+  const token = S.apifyToken;
+  if (!token) { setSrcBadge('maps','⚠ Sin API Key',false); return; }
+  try {
+    const query  = `${tipo} ${zona} Chile`;
+    const body   = { searchStringsArray:[query], maxCrawledPlacesPerSearch:20, language:'es', countryCode:'CL' };
+    const runRes = await fetch(
+      `https://api.apify.com/v2/acts/nwua9Gu5YkAT5Htz3/runs?token=${encodeURIComponent(token)}&waitForFinish=90`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
+    );
+    if (!runRes.ok) throw new Error('HTTP '+runRes.status);
+    const rd    = await runRes.json();
+    const dsId  = rd?.data?.defaultDatasetId;
+    if (!dsId) throw new Error('No dataset');
+    const items = await fetch(`https://api.apify.com/v2/datasets/${dsId}/items?token=${encodeURIComponent(token)}&clean=true&limit=20`).then(r=>r.json());
+    const results = items.map(p=>({
+      name:     p.title||p.name||'Sin nombre',
+      phone:    (p.phoneUnformatted||p.phone||'').replace(/\D/g,''),
+      _rawPhone:p.phone||p.phoneUnformatted||'',
+      address:  p.address||'',
+      category: p.categoryName||tipo,
+      website:  p.website||'',
+      rating:   p.rating||0,
+      reviews:  p.reviewsCount||0,
+      mapsUrl:  p.url||'',
+      instagram: extractIGFromText(p.website||''),
+    }));
+    setSrcBadge('maps', results.length+' ✓', true);
+    addHubResults(results,'maps');
+  } catch(e) { setSrcBadge('maps','Error: '+e.message,false); }
+}
+
+// ── MercadoLibre ──────────────────────────────────────────────────────────────
+async function runMLSearch(tipo, zona) {
+  setHubStatus(`🛒 Buscando en MercadoLibre...`, tipo+(zona?' · '+zona:''));
+  try {
+    const q   = encodeURIComponent(tipo+(zona?' '+zona:''));
+    const url = `https://api.mercadolibre.com/sites/MLC/search?q=${q}&limit=30`;
+    const res = await fetch(url, { headers:{'Accept':'application/json'} });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const seen = new Set();
+    const results = [];
+    for (const item of (data.results||[])) {
+      const seller = item.seller;
+      if (!seller||seen.has(seller.id)) continue;
+      seen.add(seller.id);
+      const city   = item.seller_address?.city?.name||item.seller_address?.state?.name||zona||'Chile';
+      const nick   = seller.nickname||'';
+      const rep    = seller.seller_reputation;
+      results.push({
+        name:      nick.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()),
+        phone:     '',
+        address:   city,
+        category:  tipo,
+        website:   `https://www.mercadolibre.cl/perfil/${nick}`,
+        mlProfile: `https://www.mercadolibre.cl/perfil/${nick}`,
+        mlNick:    nick,
+        rating:    rep ? (rep.level_id==='5_green'?4.8:rep.level_id==='4_light_green'?4.2:3.5) : 0,
+        mlLevel:   rep?.level_id||'',
+      });
+      if (results.length>=12) break;
+    }
+    setSrcBadge('ml', results.length+' ✓', true);
+    addHubResults(results,'ml');
+  } catch(e) { setSrcBadge('ml','Error: '+e.message,false); }
+}
+
+// ── Apollo.io ─────────────────────────────────────────────────────────────────
+async function runApolloSearch(tipo, zona) {
+  setHubStatus(`🚀 Buscando en Apollo.io...`, tipo+(zona?' · '+zona:''));
+  const key = S.apolloKey;
+  if (!key) { setSrcBadge('apollo','⚠ Sin API Key',false); return; }
+  try {
+    const body = { api_key:key, q_organization_name:tipo, page:1, per_page:10 };
+    if (zona) body.q_keywords=zona;
+    const isLocal = location.hostname==='localhost'||location.hostname==='127.0.0.1';
+    const proxy   = (isLocal ? '/proxy/apollo' : 'https://corsproxy.io/?https://api.apollo.io') + '/v1/mixed_people/search';
+    const res = await fetch(proxy, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const results = (data.people||[]).map(p=>({
+      name:      (p.name||((p.first_name||'')+' '+(p.last_name||'')).trim()||'Sin nombre'),
+      phone:     (p.phone_numbers?.[0]?.sanitized_number||'').replace(/\D/g,''),
+      _rawPhone: p.phone_numbers?.[0]?.raw_number||'',
+      address:   [p.city,p.state,p.country].filter(Boolean).join(', '),
+      category:  p.title||tipo,
+      website:   p.organization?.website_url||'',
+      email:     p.email||'',
+      linkedin:  p.linkedin_url||'',
+      org:       p.organization?.name||'',
+      photoUrl:  p.photo_url||'',
+    }));
+    setSrcBadge('apollo', results.length+' ✓', true);
+    addHubResults(results,'apollo');
+  } catch(e) { setSrcBadge('apollo','Error: '+e.message,false); }
+}
+
+// ── On-demand Apollo enrichment ────────────────────────────────────────────────
+async function enrichWithApollo(orgName, resultId) {
+  const key = S.apolloKey;
+  if (!key) { toast('Configura Apollo API Key en ⚙️','err'); return; }
+  toast('🚀 Buscando decisor en Apollo...');
+  try {
+    const body = { api_key:key, q_organization_name:orgName, page:1, per_page:3 };
+    const isLocal = location.hostname==='localhost'||location.hostname==='127.0.0.1';
+    const proxy   = (isLocal ? '/proxy/apollo' : 'https://corsproxy.io/?https://api.apollo.io') + '/v1/mixed_people/search';
+    const res = await fetch(proxy, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const people = data.people||[];
+    if (!people.length) { toast('Sin contactos en Apollo para "'+orgName+'"','err'); return; }
+    // Enrich the card
+    const p = hubResults.find(x=>x._id===resultId);
+    if (p) {
+      const person = people[0];
+      p.apolloEnrich = people;
+      if (!p.email  && person.email)               p.email   = person.email;
+      if (!p.phone  && person.phone_numbers?.[0])  p.phone   = (person.phone_numbers[0].sanitized_number||'').replace(/\D/g,'');
+      if (!p.linkedin && person.linkedin_url)       p.linkedin= person.linkedin_url;
+      if (!p.org    && person.organization?.name)   p.org     = person.organization.name;
+      renderHubResults();
+    }
+    toast(`🚀 Apollo: ${people.length} contacto${people.length>1?'s':''} encontrado${people.length>1?'s':''} para "${orgName}"`);
+  } catch(e) { toast('Apollo: '+e.message,'err'); }
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderHubResults() {
+  const el = document.getElementById('hub-results');
+  const visible = getHubFiltered();
+  if (!visible.length) {
+    el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--g4);font-size:12px">Sin resultados para este filtro</div>`;
+    return;
+  }
+  const waBase = encodeURIComponent('Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobra sin arriendo ni mensualidad, por $59.900. ¿Tienen 5 minutos? 💛');
+  el.innerHTML = visible.map(p => {
+    const id       = p._id;
+    const waPhone  = p.phone ? (p.phone.startsWith('56')?p.phone:'56'+p.phone) : '';
+    const waMsg    = encodeURIComponent('Hola '+(p.name.split(' ')[0]||p.name)+', soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobra sin arriendo ni mensualidad, por $59.900. ¿Tienen 5 minutos? 💛');
+    const saved    = S.prospects.some(x=>x.id===id);
+    const sel      = hubSel.has(id);
+    const srcLabel = {maps:'🗺️ Maps',ml:'🛒 ML',apollo:'🚀 Apollo',manual:'✏️ Manual'}[p._source]||'';
+    const srcCls   = p._source||'maps';
+    const hasData  = [p.phone,p.email,p.website,p.address];
+    const quality  = hasData.filter(Boolean).length;
+
+    let enrichRow='';
+    if (p.apolloEnrich) {
+      enrichRow = p.apolloEnrich.map(person=>`
+        <div class="enrich-row">
+          ${p.photoUrl?`<img src="${esc(p.photoUrl)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;float:left;margin-right:8px">`:''}
+          <strong>${esc(person.name||'')}</strong>${person.title?` · <span style="color:var(--g5)">${esc(person.title)}</span>`:''}
+          ${person.email?`<div style="margin-top:2px;cursor:pointer" onclick="navigator.clipboard.writeText('${esc(person.email)}').then(()=>toast('Email copiado'))">📧 ${esc(person.email)}</div>`:''}
+          ${person.linkedin_url?`<a href="${esc(person.linkedin_url)}" target="_blank" style="font-size:10px;color:var(--b)">💼 LinkedIn</a>`:''}
+        </div>`).join('');
+    }
+
+    return `<div class="rc${sel?' selected':''}" id="src-${id}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div class="sel-chk${sel?' on':''}" id="chk-${id}" onclick="toggleHubSel('${id}')">${sel?'✓':''}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px">
+            <div style="flex:1;min-width:0">
+              ${p.photoUrl?`<img src="${esc(p.photoUrl)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;float:left;margin-right:8px">`:''}
+              <div style="font-size:13px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
+              ${p.org?`<div style="font-size:11px;color:var(--b);font-weight:700;margin-top:1px">🏢 ${esc(p.org)}</div>`:''}
+            </div>
+            <span class="src-badge ${srcCls}">${srcLabel}</span>
+          </div>
+          ${p.category&&p.category!==p.name?`<span class="tag">${esc(p.category)}</span>`:''}
+          ${p.address?`<div class="det">📍 ${esc(p.address)}</div>`:''}
+          ${p._rawPhone||p.phone?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${esc(p._rawPhone||p.phone)}').then(()=>toast('📋 Teléfono copiado'))">📞 ${esc(p._rawPhone||p.phone)}</div>`:'<div class="det" style="color:var(--g4)">📞 Sin teléfono</div>'}
+          ${p.email?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${esc(p.email)}').then(()=>toast('📋 Email copiado'))">📧 ${esc(p.email)}</div>`:''}
+          ${p.website?`<div class="det">🌐 <a href="${esc(p.website)}" target="_blank" style="color:var(--b)">${esc(p.website.replace(/^https?:\/\//,'').slice(0,38))}</a></div>`:''}
+          ${p.mlProfile&&p._source==='ml'?`<div class="det">🛒 <a href="${esc(p.mlProfile)}" target="_blank" style="color:var(--or)">Ver en MercadoLibre</a></div>`:''}
+          ${p.linkedin?`<div class="det"><a href="${esc(p.linkedin)}" target="_blank" style="color:#0077B5">💼 LinkedIn</a></div>`:''}
+          ${p.instagram?`<div class="det"><a href="https://instagram.com/${esc(p.instagram.replace('@',''))}" target="_blank" style="color:#e1306c">📸 ${esc(p.instagram)}</a></div>`:''}
+          ${p.rating?`<div class="det">⭐ ${typeof p.rating==='number'?p.rating.toFixed(1):p.rating}${p.reviews?' ('+p.reviews+' reseñas)':''}</div>`:''}
+          <!-- Calidad del dato -->
+          <div class="dq" title="Datos disponibles">
+            ${['📞','📧','🌐','📍'].map((ic,i)=>`<span class="dqi" style="opacity:${hasData[i]?1:0.2}">${ic}</span>`).join('')}
+            <span style="font-size:9px;color:var(--g4);margin-left:2px;line-height:2">${quality}/4 datos</span>
+          </div>
+          ${enrichRow}
+          <!-- Actions -->
+          <div class="acts">
+            ${waPhone?`<a href="https://wa.me/${waPhone}?text=${waMsg}" target="_blank" class="ract wa">💬 WA</a>`:''}
+            ${p._rawPhone||p.phone?`<a href="tel:${p._rawPhone||p.phone}" class="ract call">📞</a>`:''}
+            ${p.mapsUrl?`<a href="${p.mapsUrl}" target="_blank" class="ract maps">🗺️</a>`:''}
+            ${p.linkedin?`<a href="${p.linkedin}" target="_blank" class="ract li">💼</a>`:''}
+            ${!p.apolloEnrich&&p._source!=='apollo'?`<button class="ract" style="background:#ede9fe;color:#7c3aed" onclick="enrichWithApollo('${esc(p.org||p.name)}','${id}')">🚀 Apollo</button>`:''}
+            <button class="ract save${saved?' saved':''}" id="savebtn-${id}" onclick="saveHubProspect('${id}')">
+              ${saved?'⭐ Guardado':'☆ Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getHubFiltered() {
+  switch(hubFilter) {
+    case 'maps':   return hubResults.filter(p=>p._source==='maps');
+    case 'ml':     return hubResults.filter(p=>p._source==='ml');
+    case 'apollo': return hubResults.filter(p=>p._source==='apollo');
+    case 'phone':  return hubResults.filter(p=>p.phone);
+    default:       return [...hubResults];
+  }
+}
+
+function updateHubFilterCounts() {
+  const set = (id, n) => { const el=document.getElementById(id); if(el) el.textContent=n; };
+  set('fc-all',    hubResults.length);
+  set('fc-maps',   hubResults.filter(p=>p._source==='maps').length);
+  set('fc-ml',     hubResults.filter(p=>p._source==='ml').length);
+  set('fc-apollo', hubResults.filter(p=>p._source==='apollo').length);
+  set('fc-phone',  hubResults.filter(p=>p.phone).length);
+  const withPhone = hubResults.filter(p=>p.phone).length;
+  const sumEl = document.getElementById('hub-summary');
+  if(sumEl) sumEl.textContent=`${hubResults.length} resultados · ${withPhone} con teléfono`;
+}
+
+function setHubFilter(f) {
+  hubFilter=f;
+  ['all','maps','ml','apollo','phone'].forEach(k=>{
+    const b=document.getElementById('ft-'+k); if(b) b.classList.toggle('on',k===f);
+  });
+  renderHubResults();
+}
+
+function toggleHubSel(id) {
+  hubSel.has(id) ? hubSel.delete(id) : hubSel.add(id);
+  const chk=document.getElementById('chk-'+id);
+  if(chk){ chk.className='sel-chk'+(hubSel.has(id)?' on':''); chk.textContent=hubSel.has(id)?'✓':''; }
+  const card=document.getElementById('src-'+id);
+  if(card) card.classList.toggle('selected', hubSel.has(id));
+  updateHubSelBar();
+}
+
+function selectAllHubVisible() {
+  getHubFiltered().forEach(p=>hubSel.add(p._id));
+  renderHubResults(); updateHubSelBar();
+}
+
+function updateHubSelBar() {
+  const n=hubSel.size;
+  const bar=document.getElementById('selbar'), txt=document.getElementById('selbar-txt');
+  if(txt) txt.textContent=n+' seleccionado'+(n===1?'':'s');
+  if(bar) bar.classList.toggle('vis', n>0);
+}
+
+function saveHubProspect(id) {
+  const p=hubResults.find(x=>x._id===id);
+  if(!p) return;
+  const phone=p.phone?(p.phone.startsWith('56')?p.phone:'56'+p.phone):(p._rawPhone||'');
+  saveProspect({ id, name:p.name, phone:phone||p._rawPhone||'', category:p.category||p.org||'Negocio',
+    address:p.address||'', email:p.email||'', website:p.website||'', source:p._source||'hub' });
+  const btn=document.getElementById('savebtn-'+id);
+  if(btn){ btn.className='ract saved'; btn.textContent='⭐ Guardado'; }
+}
+
+function launchSelBarCampaign() {
+  const selected=hubResults.filter(p=>hubSel.has(p._id));
+  if(!selected.length){ toast('Selecciona al menos un prospecto','err'); return; }
+  const withPhone=selected.filter(p=>p.phone);
+  if(!withPhone.length){ toast('Los seleccionados no tienen teléfono','err'); return; }
+  const msg='Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobra sin arriendo ni mensualidad, por $59.900. ¿Tienen 5 minutos? 💛';
+  if(!confirm(`Enviar WhatsApp a ${withPhone.length} contacto${withPhone.length>1?'s':''}?`)) return;
+  launchBulkWAHub(withPhone, msg, 0);
+}
+
+function launchBulkWAHub(list, template, idx) {
+  if(idx>=list.length){ toast('🎉 Campaña completada: '+list.length+' mensajes'); refreshMiniMeta(); return; }
+  const p=list[idx];
+  const phone=(p.phone||'').replace(/\D/g,'');
+  const waNum=phone.startsWith('56')?phone:'56'+phone;
+  const first=p.name.split(' ')[0]||p.name;
+  const msg=template.replace(/\[nombre\]/gi,first);
+  S.dms=(S.dms||0)+1; save(S);
+  window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank');
+  if(idx+1<list.length) setTimeout(()=>{ toast(`💬 ${idx+1}/${list.length} — siguiente: ${list[idx+1].name.split(' ')[0]}`); launchBulkWAHub(list,template,idx+1); },1800);
+  else setTimeout(()=>{ toast('🎉 Campaña completada: '+list.length+' mensajes'); refreshMiniMeta(); },800);
+}
+
+// ── Manual prospect entry ─────────────────────────────────────────────────────
+function showAddManual() {
+  document.getElementById('manual-modal').classList.add('o');
+  if(lastCoords) {
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lastCoords.latitude}&lon=${lastCoords.longitude}&format=json&accept-language=es`, {headers:{'User-Agent':'HolaLinda/1.0'}})
+      .then(r=>r.json()).then(d=>{
+        const inp=document.getElementById('manual-addr');
+        if(inp&&!inp.value) inp.value=(d.address?.road||'')+', '+(d.address?.city_district||d.address?.city||d.address?.town||'');
+      }).catch(()=>{});
+  }
+}
+function closeManual() { document.getElementById('manual-modal').classList.remove('o'); }
+function saveManualProspect() {
+  const name  =(document.getElementById('manual-name').value||'').trim();
+  const phone =(document.getElementById('manual-phone').value||'').trim().replace(/\D/g,'');
+  const cat   =(document.getElementById('manual-cat').value||'').trim()||'Manual';
+  const addr  =(document.getElementById('manual-addr').value||'').trim();
+  if(!name){ toast('Ingresa el nombre del local','err'); return; }
+  const id    = 'manual_'+Date.now();
+  const waNum = phone?(phone.startsWith('56')?phone:'56'+phone):'';
+  const prospect = {_id:id,_source:'manual',name,phone:waNum||phone,address:addr,category:cat};
+  hubResults.unshift(prospect);
+  saveProspect({id,name,phone:waNum||phone,category:cat,address:addr,source:'manual'});
+  ['manual-name','manual-phone','manual-cat','manual-addr'].forEach(x=>{ document.getElementById(x).value=''; });
+  closeManual();
+  document.getElementById('hub-filter-bar').style.display='block';
+  updateHubFilterCounts(); renderHubResults();
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function extractIGFromText(url) {
+  if(!url) return '';
+  const m = url.match(/instagram\.com\/([^/?#\s]+)/);
+  return m ? '@'+m[1] : '';
 }
 
 // ── PROSPECTOS GUARDADOS ──────────────────────────────────────────────────────
@@ -1091,293 +1546,6 @@ function launchBulkWA(list, template, idx) {
   }
 }
 
-// ── SELBAR (desde resultados de búsqueda) ─────────────────────────────────────
-let searchSel = new Set(); // ids seleccionados en resultados búsqueda
-let searchResults = []; // último batch de resultados
-
-function toggleSearchSel(id) {
-  if (searchSel.has(id)) searchSel.delete(id);
-  else searchSel.add(id);
-  const card = document.getElementById('src-'+id);
-  if (card) card.classList.toggle('selected', searchSel.has(id));
-  const chk = document.getElementById('chk-'+id);
-  if (chk) { chk.className='sel-chk'+(searchSel.has(id)?' on':''); chk.textContent=searchSel.has(id)?'✓':''; }
-  updateSelBar();
-}
-
-function updateSelBar() {
-  const n = searchSel.size;
-  const bar = document.getElementById('selbar');
-  const txt = document.getElementById('selbar-txt');
-  if (txt) txt.textContent = n + ' seleccionado'+(n===1?'':'s');
-  bar.classList.toggle('vis', n > 0);
-  updateSelCampBar();
-}
-
-function launchSelBarCampaign() {
-  const selected = searchResults.filter(p => searchSel.has(p._id));
-  if (!selected.length) { toast('Sin selección','err'); return; }
-  const msgTemplate = 'Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobro sin arriendo ni mensualidad, por $59.900. ¿Tienen un momento? 💛';
-  const withPhone = selected.filter(p => (p._phone||'').length >= 8);
-  if (!withPhone.length) { toast('Sin teléfono en los seleccionados','err'); return; }
-  if (!confirm(`Enviar WA a ${withPhone.length} contacto${withPhone.length>1?'s':''}?`)) return;
-  launchBulkWASearch(withPhone, msgTemplate, 0);
-}
-
-function launchBulkWASearch(list, template, idx) {
-  if (idx >= list.length) { toast('🎉 Campaña completada'); return; }
-  const p = list[idx];
-  const firstName = (p._name||'').split(' ')[0] || p._name;
-  const msg = template.replace(/\[nombre\]/gi, firstName);
-  window.open('https://wa.me/'+p._phone+'?text='+encodeURIComponent(msg), '_blank');
-  S.dms=(S.dms||0)+1; save(S);
-  if (idx+1 < list.length) {
-    setTimeout(()=>{ toast(`💬 ${idx+1}/${list.length} — próximo: ${list[idx+1]._name.split(' ')[0]}`); launchBulkWASearch(list,template,idx+1); }, 1800);
-  }
-}
-
-// ── APIFY ─────────────────────────────────────────────────────────────────────
-async function runApify() {
-  const token = S.apifyToken;
-  if (!token) { showApifyErr('Ingresa tu Apify API Token en la configuración ⬆️'); return; }
-  const tipo = document.getElementById('tipo-inp').value.trim();
-  const zona = document.getElementById('zona-inp').value.trim();
-  if (!tipo||!zona) { toast('Completa tipo y zona','err'); return; }
-  doApifySearch(`${tipo} ${zona} Chile`);
-}
-
-async function runApifyNearMe() {
-  const token = S.apifyToken;
-  if (!token) { showApifyErr('Ingresa tu Apify API Token en la configuración ⬆️'); return; }
-  const tipo = document.getElementById('tipo-inp').value.trim();
-  if (!tipo) { toast('Ingresa el tipo de negocio primero','err'); return; }
-  if (!navigator.geolocation) { toast('GPS no disponible','err'); return; }
-  toast('📍 Obteniendo ubicación...');
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      lastCoords = pos.coords;
-      // Use coordinates directly in the search query
-      const query = `${tipo} cerca de ${pos.coords.latitude.toFixed(4)},${pos.coords.longitude.toFixed(4)} Chile`;
-      doApifySearch(query, pos.coords);
-    },
-    err => toast('GPS: '+(err.code===1?'Permiso denegado':'Error'),'err'),
-    { timeout:10000, enableHighAccuracy:true }
-  );
-}
-
-async function doApifySearch(searchQuery, coords) {
-  document.getElementById('apify-err').style.display='none';
-  document.getElementById('apify-results').innerHTML='';
-  document.getElementById('apify-sel-summary').style.display='none';
-  document.getElementById('apify-loading').style.display='block';
-  document.getElementById('apify-btn').disabled=true;
-  searchSel.clear(); searchResults=[];
-
-  const token = S.apifyToken;
-  const body = { searchStringsArray:[searchQuery], maxCrawledPlacesPerSearch:15, language:'es', countryCode:'CL' };
-  if (coords) { body.lat = coords.latitude; body.lng = coords.longitude; body.zoom = 14; }
-
-  try {
-    const run = await fetch(
-      `https://api.apify.com/v2/acts/nwua9Gu5YkAT5Htz3/runs?token=${encodeURIComponent(token)}&waitForFinish=90`,
-      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
-    );
-    if (!run.ok) { const e=await run.json().catch(()=>({})); throw new Error(e.error?.message||`Error ${run.status}`); }
-    const rd = await run.json();
-    const dsId = rd?.data?.defaultDatasetId;
-    if (!dsId) throw new Error('No se obtuvo dataset del scraper');
-    const items = await fetch(`https://api.apify.com/v2/datasets/${dsId}/items?token=${encodeURIComponent(token)}&clean=true&limit=15`).then(r=>r.json());
-    if (!items.length) { showApifyErr('Sin resultados. Prueba con otro tipo o zona.'); }
-    else renderApifyResults(items);
-  } catch(e) {
-    showApifyErr(e.message||'Error de red');
-  } finally {
-    document.getElementById('apify-loading').style.display='none';
-    document.getElementById('apify-btn').disabled=false;
-  }
-}
-
-function showApifyErr(msg) {
-  const el = document.getElementById('apify-err');
-  el.textContent = msg; el.style.display='block';
-}
-
-function renderApifyResults(items) {
-  const el = document.getElementById('apify-results');
-  const sumEl = document.getElementById('apify-sel-summary');
-  sumEl.style.display='block';
-  sumEl.textContent = items.length+' negocios encontrados · Toca ☑️ para seleccionar · ⭐ para guardar';
-
-  el.innerHTML = '';
-  items.forEach((p,i) => {
-    const rawPhone = (p.phoneUnformatted||p.phone||'').replace(/\D/g,'');
-    const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
-    const waMsg = encodeURIComponent('Hola, soy Cecilia de Mercado Pago. Me gustaría contarles sobre la Smart Point 2, nuestra terminal sin arriendo. ¿Tienen 5 minutos? 💛');
-    const id = 'apy_'+i+'_'+(p.placeId||i);
-    const phone = p.phone||p.phoneUnformatted||'';
-
-    // Register for bulk selection
-    p._id = id; p._name = p.title||'Negocio'; p._phone = waNum;
-    searchResults.push(p);
-
-    // Pre-check if already saved
-    const alreadySaved = S.prospects.some(x => x.id === id);
-
-    el.innerHTML += `<div class="rc" id="src-${id}">
-      <div style="display:flex;align-items:flex-start;gap:10px">
-        <div class="sel-chk" id="chk-${id}" onclick="toggleSearchSel('${id}')"></div>
-        <div style="flex:1;min-width:0">
-          <h3>${esc(p.title||'Sin nombre')}</h3>
-          ${p.categoryName?`<span class="tag">${esc(p.categoryName)}</span>`:''}
-          ${p.address?`<div class="det">📍 ${esc(p.address)}</div>`:''}
-          ${phone?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${esc(phone)}').then(()=>toast('📋 Copiado'))">📞 ${esc(phone)}</div>`:''}
-          ${p.rating?`<div class="det">⭐ ${p.rating.toFixed(1)}${p.reviewsCount?' ('+p.reviewsCount+')':''}</div>`:''}
-          ${p.website?`<div class="det">🌐 <a href="${p.website}" target="_blank" style="color:var(--b)">${esc(p.website.replace(/^https?:\/\//,''))}</a></div>`:''}
-          <div class="acts">
-            ${waNum?`<a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="ract wa">💬 WA</a>`:''}
-            ${phone?`<a href="tel:${phone}" class="ract call">📞 Llamar</a>`:''}
-            ${p.url?`<a href="${p.url}" target="_blank" class="ract maps">🗺️ Maps</a>`:''}
-            <button class="ract save ${alreadySaved?'saved':''}" id="savebtn-${id}" onclick="saveApifyProspect('${id}',${i})">
-              ${alreadySaved?'⭐ Guardado':'☆ Guardar'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  });
-}
-
-function saveApifyProspect(id, idx) {
-  const p = searchResults.find(x => x._id === id);
-  if (!p) return;
-  const rawPhone = (p.phoneUnformatted||p.phone||'').replace(/\D/g,'');
-  const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
-  saveProspect({
-    id, name: p.title||'Sin nombre',
-    phone: waNum || rawPhone,
-    category: p.categoryName||'Negocio',
-    address: p.address||'',
-    source: 'apify'
-  });
-  const btn = document.getElementById('savebtn-'+id);
-  if (btn) { btn.className='ract saved'; btn.textContent='⭐ Guardado'; }
-}
-
-// ── APOLLO ────────────────────────────────────────────────────────────────────
-async function runApollo() {
-  const key = S.apolloKey;
-  if (!key) { showApolloErr('Ingresa tu Apollo API Key en la configuración ⬆️'); return; }
-  const emp = document.getElementById('emp-inp').value.trim();
-  if (!emp) { toast('Ingresa el nombre de la empresa','err'); return; }
-  const dom = document.getElementById('dom-inp').value.trim();
-
-  document.getElementById('apollo-err').style.display='none';
-  document.getElementById('apollo-results').innerHTML='';
-  document.getElementById('apollo-sel-summary').style.display='none';
-  document.getElementById('apollo-loading').style.display='block';
-  document.getElementById('apollo-btn').disabled=true;
-
-  try {
-    const body = { api_key:key, q_organization_name:emp, page:1, per_page:10 };
-    if (dom) body.q_organization_domains=[dom];
-    const isLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
-    const defaultProxy = isLocal ? '/proxy/apollo' : 'https://corsproxy.io/?https://api.apollo.io';
-    const proxyBase = (S.apolloProxy || defaultProxy).replace(/\/$/, '');
-    const apolloUrl = proxyBase + '/v1/mixed_people/search';
-    const res = await fetch(apolloUrl, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},
-      body:JSON.stringify(body)
-    });
-    if (res.status===401||res.status===403) throw new Error('API Key de Apollo inválida o sin permisos');
-    if (!res.ok) throw new Error(`Error ${res.status}`);
-    const data = await res.json();
-    const people = data.people||[];
-    if (!people.length) showApolloErr('No se encontraron contactos. Prueba con otro nombre de empresa.');
-    else renderApolloResults(people, emp);
-  } catch(e) {
-    const msg = e.message||'';
-    const isCors = msg.includes('fetch')||msg.includes('NetworkError')||msg.includes('Failed to fetch');
-    document.getElementById('apollo-err').innerHTML = isCors
-      ? `⚠️ <strong>Error de conexión</strong>.<br>Revisa tu conexión a internet e intenta nuevamente.`
-      : esc(msg);
-    document.getElementById('apollo-err').style.display='block';
-  } finally {
-    document.getElementById('apollo-loading').style.display='none';
-    document.getElementById('apollo-btn').disabled=false;
-  }
-}
-
-function showApolloErr(msg) {
-  const el = document.getElementById('apollo-err');
-  el.textContent = msg; el.style.display='block';
-}
-
-function renderApolloResults(people, orgName) {
-  const el = document.getElementById('apollo-results');
-  const sumEl = document.getElementById('apollo-sel-summary');
-  sumEl.style.display='block';
-  sumEl.textContent = people.length+' contactos encontrados para '+orgName;
-
-  people.forEach((p,i) => {
-    const name = (p.name||`${p.first_name||''} ${p.last_name||''}`.trim()||'Sin nombre');
-    const rawPhone = (p.phone_numbers?.[0]?.sanitized_number||p.phone_numbers?.[0]?.raw_number||'').replace(/\D/g,'');
-    const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
-    const waMsg = encodeURIComponent(`Hola ${p.first_name||name.split(' ')[0]}, soy Cecilia de Mercado Pago. Me gustaría presentarles la Smart Point 2 para su negocio. ¿Tienen un momento esta semana? 💛`);
-    const loc = [p.city,p.state,p.country].filter(Boolean).join(', ');
-    const id = 'apo_'+i+'_'+(p.id||i);
-    const alreadySaved = S.prospects.some(x => x.id === id);
-    const phone = p.phone_numbers?.[0]?.raw_number || '';
-
-    // Register for bulk
-    p._id = id; p._name = name; p._phone = waNum;
-    searchResults.push(p);
-
-    el.innerHTML += `<div class="rc" id="src-${id}">
-      <div style="display:flex;align-items:flex-start;gap:10px">
-        <div class="sel-chk" id="chk-${id}" onclick="toggleSearchSel('${id}')"></div>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            ${p.photo_url?`<img src="${p.photo_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="aav">${name.charAt(0).toUpperCase()}</div>`}
-            <div style="min-width:0">
-              <div style="font-size:13px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div>
-              ${p.title?`<div style="font-size:11px;color:var(--g5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.title)}</div>`:''}
-              ${p.organization_name?`<div style="font-size:11px;color:var(--b);font-weight:700">${esc(p.organization_name)}</div>`:''}
-            </div>
-          </div>
-          ${loc?`<div class="det">📍 ${esc(loc)}</div>`:''}
-          ${p.email?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${p.email}').then(()=>toast('📋 Email copiado'))">📧 ${esc(p.email)}</div>`:''}
-          ${phone?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${esc(phone)}').then(()=>toast('📋 Copiado'))">📞 ${esc(phone)}</div>`:''}
-          ${p.seniority?`<div class="det">👤 ${esc(p.seniority)}</div>`:''}
-          <div class="acts">
-            ${waNum?`<a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="ract wa">💬 WA</a>`:''}
-            ${phone?`<a href="tel:${phone}" class="ract call">📞 Llamar</a>`:''}
-            ${p.linkedin_url?`<a href="${p.linkedin_url}" target="_blank" class="ract li">💼 LinkedIn</a>`:''}
-            <button class="ract save ${alreadySaved?'saved':''}" id="savebtn-${id}" onclick="saveApolloProspect('${id}',${i})">
-              ${alreadySaved?'⭐ Guardado':'☆ Guardar'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  });
-}
-
-function saveApolloProspect(id, idx) {
-  const p = searchResults.find(x => x._id === id);
-  if (!p) return;
-  const rawPhone = (p.phone_numbers?.[0]?.sanitized_number||p.phone_numbers?.[0]?.raw_number||'').replace(/\D/g,'');
-  const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
-  saveProspect({
-    id, name: p.name || `${p.first_name||''} ${p.last_name||''}`.trim() || 'Sin nombre',
-    phone: waNum || rawPhone,
-    category: p.title || p.seniority || 'Contacto',
-    address: [p.city,p.country].filter(Boolean).join(', '),
-    source: 'apollo'
-  });
-  const btn = document.getElementById('savebtn-'+id);
-  if (btn) { btn.className='ract saved'; btn.textContent='⭐ Guardado'; }
-}
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
