@@ -1151,62 +1151,98 @@ async function runMapsSearch(tipo, zona) {
 // ── OpenStreetMap via Overpass API ────────────────────────────────────────────
 // Gratis, sin key, CORS-friendly. Negocios locales reales de Chile.
 const OSM_TAGS = {
-  'peluquería':'shop=hairdresser','peluqueria':'shop=hairdresser','barbería':'shop=hairdresser','barberia':'shop=hairdresser',
+  // Belleza
+  'peluquería':'shop=hairdresser','peluqueria':'shop=hairdresser','barbería':'shop=hairdresser','barberia':'shop=hairdresser','salón de belleza':'shop=beauty','salon de belleza':'shop=beauty','spa':'leisure=spa','nail':'shop=beauty',
+  // Comida — locales/cafeterías
   'café':'amenity=cafe','cafe':'amenity=cafe','cafetería':'amenity=cafe','cafeteria':'amenity=cafe',
-  'ferretería':'shop=hardware','ferreteria':'shop=hardware',
-  'restaurante':'amenity=restaurant','restaurant':'amenity=restaurant',
-  'farmacia':'amenity=pharmacy',
-  'panadería':'shop=bakery','panaderia':'shop=bakery',
-  'supermercado':'shop=supermarket',
-  'veterinaria':'amenity=veterinary','veterinario':'amenity=veterinary',
-  'gym':'leisure=fitness_centre','gimnasio':'leisure=fitness_centre',
-  'dentista':'amenity=dentist','dental':'amenity=dentist',
-  'bar':'amenity=bar','pub':'amenity=pub',
+  'panadería':'shop=bakery','panaderia':'shop=bakery','pastelería':'shop=pastry','pasteleria':'shop=pastry',
   'carnicería':'shop=butcher','carniceria':'shop=butcher',
-  'librería':'shop=books','libreria':'shop=books',
-  'floristería':'shop=florist','floristeria':'shop=florist',
-  'zapatería':'shop=shoes','zapateria':'shop=shoes',
+  'supermercado':'shop=supermarket','minimarket':'shop=convenience','almacén':'shop=convenience','almacen':'shop=convenience',
+  // Servicios
+  'ferretería':'shop=hardware','ferreteria':'shop=hardware',
+  'farmacia':'amenity=pharmacy','veterinaria':'amenity=veterinary','veterinario':'amenity=veterinary',
+  'gym':'leisure=fitness_centre','gimnasio':'leisure=fitness_centre',
+  'dentista':'amenity=dentist','dental':'amenity=dentist','clínica dental':'amenity=dentist','clinica dental':'amenity=dentist',
+  'banco':'amenity=bank','notaría':'amenity=notary','notaria':'amenity=notary',
+  'lavandería':'shop=laundry','lavanderia':'shop=laundry',
+  'colegio':'amenity=school','escuela':'amenity=school','kínder':'amenity=kindergarten','kinder':'amenity=kindergarten',
+  // Ropa/Accesorios
   'ropa':'shop=clothes','boutique':'shop=clothes','vestuario':'shop=clothes',
+  'zapatería':'shop=shoes','zapateria':'shop=shoes',
   'joyería':'shop=jewelry','joyeria':'shop=jewelry',
   'óptica':'shop=optician','optica':'shop=optician',
-  'hotel':'tourism=hotel','hostal':'tourism=hostel','hostel':'tourism=hostel',
-  'minimarket':'shop=convenience','almacén':'shop=convenience','almacen':'shop=convenience',
-  'papelería':'shop=stationery','papeleria':'shop=stationery',
+  // Tech
   'electrónica':'shop=electronics','electronica':'shop=electronics',
   'computación':'shop=computer','computacion':'shop=computer',
-  'lavandería':'shop=laundry','lavanderia':'shop=laundry',
-  'estacionamiento':'amenity=parking','parking':'amenity=parking',
-  'kínder':'amenity=kindergarten','kinder':'amenity=kindergarten',
-  'colegio':'amenity=school','escuela':'amenity=school',
-  'banco':'amenity=bank','notaría':'amenity=post_office','notaria':'amenity=post_office',
+  // Libros/Papelería
+  'librería':'shop=books','libreria':'shop=books',
+  'papelería':'shop=stationery','papeleria':'shop=stationery',
+  // Flores
+  'floristería':'shop=florist','floristeria':'shop=florist',
+  // Hospedaje
+  'hotel':'tourism=hotel','hostal':'tourism=hostel','hostel':'tourism=hostel',
+  // Bares
+  'bar':'amenity=bar','pub':'amenity=pub',
+  // Restaurante genérico
+  'restaurante':'amenity=restaurant','restaurant':'amenity=restaurant',
 };
+
+// Tipos de comida — busca por cuisine + nombre (sushi, pizza, chino, etc.)
+const OSM_CUISINES = ['sushi','pizza','chino','china','japonés','japones','japanese','thai','tailandés','tailandes','italiano','italiano','peruano','venezolano','hamburguesa','burger','árabe','arabe','mexicano','coreano','korean','vietnamita','indian','indio','parrilla','asado','mariscos','seafood','vegetariano','vegano','empanada','sandwichería','sandwicheria','completo','lomito'];
 
 async function runMLSearch(tipo, zona) {
   setHubStatus('🏘️ Buscando en OpenStreetMap...', tipo+(zona?' · '+zona:''));
   try {
-    // 1. Geocode zona → lat/lon
-    let lat = null, lon = null;
+    // 1. Geocode zona → lat/lon y determinar radio
+    let lat = null, lon = null, radius = 6000;
     if (zona) {
       const geoRes = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(zona+' Chile')}&format=json&limit=1`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(zona+' Chile')}&format=json&limit=1&addressdetails=1`,
         { headers:{ 'User-Agent':'HolaLinda/1.0', 'Accept-Language':'es' } }
       );
       const geo = await geoRes.json();
-      if (geo.length) { lat = parseFloat(geo[0].lat); lon = parseFloat(geo[0].lon); }
+      if (geo.length) {
+        lat = parseFloat(geo[0].lat); lon = parseFloat(geo[0].lon);
+        // Radio mayor para comunas/ciudades grandes
+        const t = geo[0].type||'';
+        if (['administrative','city','town','municipality'].includes(t)) radius = 10000;
+      }
     }
     if (!lat && lastCoords) { lat = lastCoords.latitude; lon = lastCoords.longitude; }
-    if (!lat) { lat = -33.4489; lon = -70.6693; } // Default: Santiago
+    if (!lat) { lat = -33.4489; lon = -70.6693; }
 
     // 2. Build Overpass query
     const tipoKey = tipo.toLowerCase().trim();
     const osmTag  = OSM_TAGS[tipoKey];
+    const isCuisine = OSM_CUISINES.some(c => tipoKey.includes(c));
+    const safe = tipo.replace(/[^\w\sáéíóúñÁÉÍÓÚÑ]/g,'').trim();
     let q;
+
     if (osmTag) {
+      // Tag exacto conocido (peluquería, farmacia, etc.)
       const [k,v] = osmTag.split('=');
-      q = `[out:json][timeout:20];(node["${k}"="${v}"](around:5000,${lat},${lon});way["${k}"="${v}"](around:5000,${lat},${lon}););out body;`;
+      q = `[out:json][timeout:25];
+(node["${k}"="${v}"](around:${radius},${lat},${lon});
+ way["${k}"="${v}"](around:${radius},${lat},${lon});
+ node["name"~"${safe}",i](around:${radius},${lat},${lon});
+ way["name"~"${safe}",i](around:${radius},${lat},${lon}););
+out body;`;
+    } else if (isCuisine) {
+      // Tipo de cocina: busca por cuisine tag + nombre (sushi, pizza, etc.)
+      q = `[out:json][timeout:25];
+(node["amenity"="restaurant"]["cuisine"~"${safe}",i](around:${radius},${lat},${lon});
+ way["amenity"="restaurant"]["cuisine"~"${safe}",i](around:${radius},${lat},${lon});
+ node["amenity"="fast_food"]["cuisine"~"${safe}",i](around:${radius},${lat},${lon});
+ way["amenity"="fast_food"]["cuisine"~"${safe}",i](around:${radius},${lat},${lon});
+ node["name"~"${safe}",i]["amenity"](around:${radius},${lat},${lon});
+ way["name"~"${safe}",i]["amenity"](around:${radius},${lat},${lon}););
+out body;`;
     } else {
-      const safe = tipo.replace(/[^\w\sáéíóúñÁÉÍÓÚÑ]/g,'');
-      q = `[out:json][timeout:20];(node["name"~"${safe}",i](around:5000,${lat},${lon});way["name"~"${safe}",i](around:5000,${lat},${lon}););out body;`;
+      // Búsqueda genérica por nombre
+      q = `[out:json][timeout:25];
+(node["name"~"${safe}",i](around:${radius},${lat},${lon});
+ way["name"~"${safe}",i](around:${radius},${lat},${lon}););
+out body;`;
     }
 
     // 3. Query Overpass
@@ -1217,23 +1253,31 @@ async function runMLSearch(tipo, zona) {
     if (!res.ok) throw new Error('Overpass HTTP '+res.status);
     const data = await res.json();
 
-    // 4. Map to hub format
+    // 4. Map to hub format — dedup por nombre+dirección
+    const seen = new Set();
     const results = (data.elements||[])
-      .filter(el => el.tags?.name)
-      .slice(0, 20)
+      .filter(el => {
+        if (!el.tags?.name) return false;
+        const key = el.tags.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      })
+      .slice(0, 25)
       .map(el => {
         const t = el.tags||{};
-        const phone   = (t.phone||t['contact:phone']||t['contact:mobile']||'').replace(/[\s\-]/g,'');
-        const website = t.website||t['contact:website']||t['contact:facebook']||'';
+        const phone   = (t.phone||t['contact:phone']||t['contact:mobile']||t['phone:mobile']||'').replace(/[\s\-\.]/g,'');
+        const website = t.website||t['contact:website']||t['contact:facebook']||t['contact:instagram']||'';
+        const ig      = t['contact:instagram']||extractIGFromText(t.website||t['contact:website']||'')||'';
         const street  = [t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' ');
         const city    = t['addr:city']||t['addr:suburb']||t['addr:town']||zona||'';
         const address = [street,city].filter(Boolean).join(', ');
-        const category= t.shop||t.amenity||t.leisure||t.tourism||tipo;
-        const mapsUrl = el.lat&&el.lon ? `https://www.google.com/maps?q=${el.lat},${el.lon}` : '';
-        return { name:t.name, phone:phone.replace(/\D/g,''), _rawPhone:phone, address, category, website, rating:0, mapsUrl };
+        const cuisine = t.cuisine ? ' · '+t.cuisine : '';
+        const category= (t.shop||t.amenity||t.leisure||t.tourism||tipo)+cuisine;
+        const mapsUrl = el.lat&&el.lon ? `https://www.google.com/maps?q=${el.lat},${el.lon}` : (el.center ? `https://www.google.com/maps?q=${el.center.lat},${el.center.lon}` : '');
+        return { name:t.name, phone:phone.replace(/\D/g,''), _rawPhone:phone, address, category, website, instagram:ig, rating:0, mapsUrl };
       });
 
-    setSrcBadge('ml', results.length+' ✓', true);
+    setSrcBadge('ml', results.length ? results.length+' ✓' : '0 — prueba Maps', !!results.length);
     addHubResults(results, 'ml');
   } catch(e) { setSrcBadge('ml','Error: '+e.message, false); }
 }
