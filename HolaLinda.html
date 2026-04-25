@@ -1939,7 +1939,11 @@ function buildSyncPayload() {
     checklist:   S.checklist   || [],
     weekKey:     getWeekKey(),
     lastSync:    new Date().toISOString(),
-    lastDevice:  sessionStorage.getItem('hl_user') || '?'
+    lastDevice:  sessionStorage.getItem('hl_user') || '?',
+    // API keys — se sincronizan para no tener que re-ingresarlas en cada dispositivo
+    apifyToken:  S.apifyToken  || '',
+    apolloKey:   S.apolloKey   || '',
+    apolloProxy: S.apolloProxy || '',
   };
 }
 
@@ -1996,6 +2000,10 @@ function mergeRemoteData(remote) {
     S.prospects = [...(S.prospects||[]), ...newFromRemote];
     changed = true;
   }
+  // ── API Keys: sincronizar si el local está vacío ──
+  ['apifyToken','apolloKey','apolloProxy'].forEach(k => {
+    if (!S[k] && remote[k]) { S[k] = remote[k]; changed = true; }
+  });
   // ── Contadores: tomar el máximo (misma semana) ──
   if ((remote.weekKey||'') === getWeekKey()) {
     ['visitas','maquinas','prospectos','dms'].forEach(k=>{
@@ -2009,6 +2017,7 @@ function mergeRemoteData(remote) {
   if (changed) {
     save(S);
     renderProspectList(); updateProspectBadge(); refreshMiniMeta();
+    loadKeys(); updateCfgStatus();
     if (document.getElementById('s-mas')?.classList.contains('on')) { renderMetaCards(); renderTaskList(); }
     if (newFromRemote.length) toast('☁️ +'+newFromRemote.length+' prospecto'+(newFromRemote.length>1?'s':'')+' sincronizado'+(newFromRemote.length>1?'s':''));
   }
