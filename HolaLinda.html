@@ -536,8 +536,15 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 </div>
 
 <script>
-// ── PINS ─────────────────────────────────────────────────────────────────────
-const PINS = { '7743': 'Cecilia', '8812': 'Daniel' };
+// ── PINS (hashed — no plaintext credentials in source) ───────────────────────
+const PIN_HASHES = {
+  'b858460b54cc28b3e4e9c5f50b36baf44ccec41b1051d4a9f9ff662e194e6257': 'Cecilia',
+  '66e2b63c38c52adffda4aff9a1722665fa664cd38315f001d29392c489e4d1fd': 'Daniel'
+};
+async function sha256pin(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 // ── STORAGE ──────────────────────────────────────────────────────────────────
 const SK = 'hl_store';
@@ -575,16 +582,18 @@ function pk(d) {
   renderDots(false);
   if (pinBuf.length === 4) {
     const pin = pinBuf.join('');
-    const name = PINS[pin];
-    if (name) { setTimeout(() => bootApp(name), 200); }
-    else {
-      renderDots(true);
-      document.getElementById('dots').style.animation='none';
-      setTimeout(() => {
-        document.getElementById('dots').style.animation='shake .4s ease';
-        setTimeout(() => { pinBuf=[]; renderDots(false); document.getElementById('dots').style.animation=''; }, 450);
-      }, 10);
-    }
+    sha256pin(pin).then(hash => {
+      const name = PIN_HASHES[hash];
+      if (name) { setTimeout(() => bootApp(name), 200); }
+      else {
+        renderDots(true);
+        document.getElementById('dots').style.animation='none';
+        setTimeout(() => {
+          document.getElementById('dots').style.animation='shake .4s ease';
+          setTimeout(() => { pinBuf=[]; renderDots(false); document.getElementById('dots').style.animation=''; }, 450);
+        }, 10);
+      }
+    });
   }
 }
 function pdel() { pinBuf = pinBuf.slice(0,-1); renderDots(false); }
@@ -613,7 +622,7 @@ let activeTab = 0;
 // Auto-login diferido para que todos los const se inicialicen primero
 setTimeout(() => {
   const _user = sessionStorage.getItem('hl_user');
-  if (_user && Object.values(PINS).includes(_user)) bootApp(_user);
+  if (_user && Object.values(PIN_HASHES).includes(_user)) bootApp(_user);
 }, 0);
 
 // ── APP INIT ──────────────────────────────────────────────────────────────────
