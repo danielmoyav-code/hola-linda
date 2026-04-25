@@ -402,7 +402,10 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
     <!-- ══ BUSCAR ══ -->
     <div id="s-buscar" class="scr">
       <div class="hdr-dk">
-        <div class="hdr-h1" style="color:var(--w)">🎯 Hub de Prospectos IA</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="hdr-h1" style="color:var(--w)">🎯 Hub de Prospectos IA</div>
+          <span id="sync-ind" title="Sync no configurado — toca ⚙️ API Keys" style="font-size:16px;cursor:pointer;opacity:.8" onclick="toggleCfg()">☁️</span>
+        </div>
         <div class="hdr-sub" style="color:var(--g4)">Google Maps · MercadoLibre · Apollo · Manual</div>
       </div>
       <div class="sc">
@@ -443,6 +446,20 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
             <input id="apollo-inp" class="inp" type="password" placeholder="tu-apollo-api-key">
             <div style="font-size:10px;color:var(--g4);margin-top:2px">→ app.apollo.io → Settings → Integrations → API</div>
             <button onclick="saveKeys()" class="btn btn-dk" style="margin-top:14px">💾 Guardar configuración</button>
+
+            <!-- ── SYNC ── -->
+            <div style="height:1px;background:var(--g2);margin:18px 0 12px"></div>
+            <div style="font-size:12px;font-weight:800;color:var(--dk);margin-bottom:4px">☁️ Sync entre dispositivos</div>
+            <div style="font-size:11px;color:var(--g5);line-height:1.6;margin-bottom:10px">Conecta <a href="https://jsonbin.io" target="_blank" style="color:var(--b);font-weight:700">JSONBin.io</a> (gratis, sin tarjeta) para que prospectos y metas se sincronicen automáticamente entre el celular de Cecilia, el celular de Daniel y ambas computadoras.</div>
+            <span class="fl">JSONBin Master Key <span style="color:var(--g4);font-weight:400">(de tu cuenta JSONBin)</span></span>
+            <input id="jsonbin-key-inp" class="inp" type="password" placeholder="$2a$10$...">
+            <span class="fl" style="margin-top:8px">Bin ID <span style="color:var(--g4);font-weight:400">(créalo aquí o copia desde otro dispositivo)</span></span>
+            <input id="jsonbin-id-inp" class="inp" placeholder="ej: 64abc123def456...">
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button onclick="createJsonBin()" class="btn btn-sm btn-bl" style="flex:1">✨ Crear Bin nuevo</button>
+              <button onclick="doManualSync()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);flex:1">🔄 Sync ahora</button>
+            </div>
+            <div id="sync-status" style="font-size:11px;color:var(--g5);margin-top:8px;text-align:center;min-height:16px;line-height:1.5"></div>
           </div>
         </div>
 
@@ -634,12 +651,15 @@ const wk = getWeekKey();
 if (S.weekKey !== wk) {
   // Preserve keys and prospects across weeks, reset only counters/checklist
   S = { apifyToken:S.apifyToken||'', apolloKey:S.apolloKey||'', apolloProxy:S.apolloProxy||'',
+        jsonbinKey:S.jsonbinKey||'', jsonbinId:S.jsonbinId||'',
         prospects:S.prospects||[], weekKey:wk, visitas:0, maquinas:0, prospectos:0, dms:0, checklist:[] };
   save(S);
 }
 S.apifyToken  = S.apifyToken  || '';
 S.apolloKey   = S.apolloKey   || '';
 S.apolloProxy = S.apolloProxy || '';
+S.jsonbinKey  = S.jsonbinKey  || '';
+S.jsonbinId   = S.jsonbinId   || '';
 S.prospects   = S.prospects||[];
 S.checklist   = S.checklist||[];
 
@@ -696,6 +716,7 @@ setTimeout(() => {
 
 // ── APP INIT ──────────────────────────────────────────────────────────────────
 function initApp() {
+  if (S.jsonbinKey && S.jsonbinId) { syncPull(); startAutoSync(); }
   renderDateTime();
   setInterval(renderDateTime, 10000);
   renderMetaCards();
@@ -788,7 +809,7 @@ function doVisita(tipo) {
   S.visitas = (S.visitas||0) + 1;
   if (tipo === 'interesado') { S.prospectos = (S.prospectos||0) + 1; }
   if (tipo === 'venta') { S.maquinas = (S.maquinas||0) + 1; S.prospectos = (S.prospectos||0) + 1; }
-  save(S);
+  save(S); debouncedSyncPush();
   refreshMiniMeta();
   closeVisita();
   const msgs = { fria:'🚶 Visita registrada', interesado:'🔥 ¡Prospecto caliente guardado!', venta:'🎉 ¡Venta cerrada! Felicitaciones 💛' };
@@ -923,7 +944,7 @@ function chMeta(key, delta) {
   const cfg = META_CFG.find(m=>m.key===key);
   const prev = S[key];
   S[key] = Math.max(0, (S[key]||0)+delta);
-  save(S);
+  save(S); debouncedSyncPush();
   document.getElementById('mv-'+key).textContent = S[key];
   document.getElementById('mpb-'+key).style.width = Math.min(100,Math.round(S[key]/cfg.meta*100))+'%';
   const top = document.querySelectorAll('.mc')[META_CFG.findIndex(m=>m.key===key)];
@@ -965,7 +986,7 @@ function renderTaskList() {
 function toggleTask(id) {
   const cl = S.checklist||[];
   S.checklist = cl.includes(id) ? cl.filter(x=>x!==id) : [...cl,id];
-  save(S); renderTaskList();
+  save(S); debouncedSyncPush(); renderTaskList();
   if (S.checklist.length===TASKS.length) toast('🎉 ¡Día completado!');
 }
 
@@ -981,10 +1002,18 @@ function doReset() {
 function loadKeys() {
   document.getElementById('apify-inp').value  = S.apifyToken||'';
   document.getElementById('apollo-inp').value = S.apolloKey||'';
+  const jki = document.getElementById('jsonbin-key-inp');
+  const jbi = document.getElementById('jsonbin-id-inp');
+  if(jki) jki.value = S.jsonbinKey||'';
+  if(jbi) jbi.value = S.jsonbinId||'';
 }
 function saveKeys() {
   S.apifyToken = document.getElementById('apify-inp').value.trim();
   S.apolloKey  = document.getElementById('apollo-inp').value.trim();
+  const jki = document.getElementById('jsonbin-key-inp');
+  const jbi = document.getElementById('jsonbin-id-inp');
+  if(jki) S.jsonbinKey = jki.value.trim();
+  if(jbi) S.jsonbinId  = jbi.value.trim();
   save(S); toast('Configuración guardada 💛');
   updateCfgStatus();
   document.getElementById('cfg-body').classList.remove('o');
@@ -1417,7 +1446,7 @@ function saveProspect(p) {
   const exists = S.prospects.some(x => x.id === p.id);
   if (exists) { toast('Ya está guardado','err'); return; }
   S.prospects.push(p);
-  save(S);
+  save(S); syncPush();
   updateProspectBadge();
   toast('💾 Guardado en Difusión');
 }
@@ -1425,7 +1454,7 @@ function saveProspect(p) {
 function removeProspect(id) {
   S.prospects = S.prospects.filter(p => p.id !== id);
   prospectSel.delete(id);
-  save(S);
+  save(S); debouncedSyncPush();
   renderProspectList();
   updateProspectBadge();
   updateSelBar();
@@ -1434,7 +1463,7 @@ function removeProspect(id) {
 function clearAllProspects() {
   if (S.prospects.length === 0) { toast('Lista ya vacía'); return; }
   if (confirm('¿Vaciar todos los prospectos guardados?')) {
-    S.prospects = []; prospectSel.clear(); save(S);
+    S.prospects = []; prospectSel.clear(); save(S); syncPush();
     renderProspectList(); updateProspectBadge(); updateSelBar();
     toast('Lista vaciada');
   }
@@ -1549,6 +1578,163 @@ function launchBulkWA(list, template, idx) {
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SYNC — JSONBin.io (gratis, sin backend)
+// Sincroniza prospectos, metas y checklist entre todos los dispositivos.
+// ══════════════════════════════════════════════════════════════════════════════
+
+let syncDebounce = null;
+
+function debouncedSyncPush() {
+  clearTimeout(syncDebounce);
+  syncDebounce = setTimeout(syncPush, 2000);
+}
+
+function buildSyncPayload() {
+  return {
+    prospects:   S.prospects   || [],
+    visitas:     S.visitas     || 0,
+    maquinas:    S.maquinas    || 0,
+    prospectos:  S.prospectos  || 0,
+    dms:         S.dms         || 0,
+    checklist:   S.checklist   || [],
+    weekKey:     getWeekKey(),
+    lastSync:    new Date().toISOString(),
+    lastDevice:  sessionStorage.getItem('hl_user') || '?'
+  };
+}
+
+async function syncPush() {
+  if (!S.jsonbinKey || !S.jsonbinId) return;
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(S.jsonbinId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': S.jsonbinKey },
+      body: JSON.stringify(buildSyncPayload())
+    });
+    setSyncIndicator(res.ok ? 'ok' : 'err');
+  } catch { setSyncIndicator('err'); }
+}
+
+async function syncPull() {
+  if (!S.jsonbinKey || !S.jsonbinId) return false;
+  try {
+    setSyncIndicator('syncing');
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(S.jsonbinId)}/latest`, {
+      headers: { 'X-Master-Key': S.jsonbinKey }
+    });
+    if (!res.ok) { setSyncIndicator('err'); return false; }
+    const data = await res.json();
+    mergeRemoteData(data.record || {});
+    setSyncIndicator('ok');
+    return true;
+  } catch { setSyncIndicator('err'); return false; }
+}
+
+function mergeRemoteData(remote) {
+  let changed = false;
+  // ── Prospects: union by id (nunca se pierden datos) ──
+  const localIds = new Set((S.prospects||[]).map(p=>p.id));
+  const newFromRemote = (remote.prospects||[]).filter(p=>p.id && !localIds.has(p.id));
+  if (newFromRemote.length) {
+    S.prospects = [...(S.prospects||[]), ...newFromRemote];
+    changed = true;
+  }
+  // ── Contadores: tomar el máximo (misma semana) ──
+  if ((remote.weekKey||'') === getWeekKey()) {
+    ['visitas','maquinas','prospectos','dms'].forEach(k=>{
+      const rv = remote[k]||0;
+      if (rv > (S[k]||0)) { S[k]=rv; changed=true; }
+    });
+    // Checklist: unión
+    const cl = new Set([...(S.checklist||[]), ...(remote.checklist||[])]);
+    if (cl.size > (S.checklist||[]).length) { S.checklist=[...cl]; changed=true; }
+  }
+  if (changed) {
+    save(S);
+    renderProspectList(); updateProspectBadge(); refreshMiniMeta();
+    if (document.getElementById('s-mas')?.classList.contains('on')) { renderMetaCards(); renderTaskList(); }
+    if (newFromRemote.length) toast('☁️ +'+newFromRemote.length+' prospecto'+(newFromRemote.length>1?'s':'')+' sincronizado'+(newFromRemote.length>1?'s':''));
+  }
+}
+
+async function createJsonBin() {
+  const key = (document.getElementById('jsonbin-key-inp').value||'').trim();
+  if (!key) { toast('Ingresa el Master Key de JSONBin.io primero','err'); return; }
+  setSyncStatus('⏳ Creando bin en JSONBin.io...');
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': key,
+        'X-Bin-Name': 'HolaLinda-Sync'
+      },
+      body: JSON.stringify(buildSyncPayload())
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status+' — verifica tu Master Key');
+    const data = await res.json();
+    const binId = data?.metadata?.id;
+    if (!binId) throw new Error('Sin Bin ID en la respuesta');
+    document.getElementById('jsonbin-id-inp').value = binId;
+    S.jsonbinKey = key; S.jsonbinId = binId; save(S);
+    setSyncStatus('✅ Bin creado · <strong>'+binId+'</strong><br><span style="color:var(--g5)">Copia este Bin ID en los otros dispositivos</span>');
+    toast('☁️ ¡Bin creado! Copia el Bin ID a los otros dispositivos 💛');
+    setSyncIndicator('ok');
+  } catch(e) {
+    setSyncStatus('❌ Error: '+e.message);
+    toast('Error JSONBin: '+e.message,'err');
+  }
+}
+
+async function doManualSync() {
+  const key = (document.getElementById('jsonbin-key-inp').value||'').trim();
+  const id  = (document.getElementById('jsonbin-id-inp').value||'').trim();
+  if (!key || !id) { toast('Completa Master Key y Bin ID primero','err'); return; }
+  S.jsonbinKey = key; S.jsonbinId = id; save(S);
+  setSyncStatus('🔄 Sincronizando...');
+  const ok = await syncPull();
+  if (ok) {
+    await syncPush();
+    setSyncStatus('✅ Sincronizado · '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}));
+    toast('☁️ ¡Sincronizado con todos los dispositivos! 💛');
+    startAutoSync();
+  } else {
+    setSyncStatus('❌ Error de conexión — verifica las keys e intenta de nuevo');
+  }
+}
+
+function setSyncStatus(html) {
+  const el = document.getElementById('sync-status');
+  if(el) el.innerHTML = html;
+}
+
+function setSyncIndicator(state) {
+  const el = document.getElementById('sync-ind');
+  if (!el) return;
+  const map = { ok:'☁️', syncing:'🔄', err:'⚠️', idle:'☁️' };
+  el.textContent = map[state] || '☁️';
+  el.title = { ok:'Sync activo ✓', syncing:'Sincronizando...', err:'Error de sync — revisa ⚙️', idle:'Sync no configurado' }[state] || '';
+}
+
+let _syncAutoStarted = false;
+function startAutoSync() {
+  if (_syncAutoStarted) return;
+  _syncAutoStarted = true;
+  // Pull al volver de background (usuario abre la app)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && S.jsonbinKey && S.jsonbinId) {
+      syncPull();
+    }
+  });
+  // Pull automático cada 5 minutos (visible)
+  setInterval(() => {
+    if (document.visibilityState === 'visible' && S.jsonbinKey && S.jsonbinId) {
+      syncPull();
+    }
+  }, 5 * 60 * 1000);
+}
 </script>
 </body>
 </html>
