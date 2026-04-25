@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#FFE600">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hola Linda">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Hola Linda&quot;,&quot;short_name&quot;:&quot;Hola Linda&quot;,&quot;theme_color&quot;:&quot;%23FFE600&quot;,&quot;background_color&quot;:&quot;%23FFE600&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;start_url&quot;:&quot;/&quot;}">
+<title>Hola Linda 💛</title>
+<style>
+:root{--y:#FFE600;--b:#009EE3;--db:#003661;--dk:#1A1A2E;--g:#25D366;--red:#ef4444;--or:#f97316;--pu:#a855f7;--bg:#f4f6f9;--w:#fff;--g1:#f3f4f6;--g2:#e5e7eb;--g4:#9ca3af;--g5:#6b7280;--r:16px;--sh:0 2px 8px rgba(0,0,0,.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--dk)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+a{text-decoration:none;color:inherit}
+button{border:none;background:none;cursor:pointer;font-family:inherit}
+
+/* ── APP SHELL ─────────────────── */
+#pin{position:fixed;inset:0;z-index:100;background:var(--dk);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:430px;margin:0 auto;background:var(--bg);overflow:hidden}
+.screens{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.scr{display:none;min-height:100%;animation:slideUp .25s ease-out}
+.scr.on{display:block}
+
+/* ── BOTTOM NAV ────────────────── */
+.nav{flex-shrink:0;display:flex;background:var(--w);border-top:1px solid var(--g2);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;min-height:58px;color:var(--g4);font-size:10px;font-weight:600;position:relative;transition:color .15s}
+.nt .ni{font-size:20px;line-height:1;position:relative}
+.nt.on{color:var(--dk)}
+.nt.on::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:3px;background:var(--y);border-radius:0 0 3px 3px}
+.nbadge{position:absolute;top:-4px;right:-6px;background:var(--red);color:#fff;font-size:8px;font-weight:900;padding:1px 4px;border-radius:10px;min-width:14px;text-align:center;line-height:14px}
+
+/* ── HEADERS ───────────────────── */
+.hdr-y{background:var(--y);padding:max(48px,calc(env(safe-area-inset-top,0px)+16px)) 20px 20px}
+.hdr-dk{background:var(--dk);padding:max(48px,calc(env(safe-area-inset-top,0px)+16px)) 20px 20px}
+.hdr-bl{background:var(--b);padding:max(48px,calc(env(safe-area-inset-top,0px)+16px)) 20px 20px}
+.hdr-db{background:var(--db);padding:max(48px,calc(env(safe-area-inset-top,0px)+16px)) 20px 20px}
+.hdr-gr{background:linear-gradient(135deg,var(--or),var(--pu));padding:max(48px,calc(env(safe-area-inset-top,0px)+16px)) 20px 20px}
+.hdr-h1{font-size:20px;font-weight:900}
+.hdr-sub{font-size:12px;margin-top:3px;opacity:.7}
+
+/* ── CARDS ─────────────────────── */
+.card{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:16px;border:1px solid rgba(0,0,0,.04)}
+.ct{font-size:13px;font-weight:800;color:var(--dk);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* ── BUTTONS ───────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:700;transition:transform .1s;width:100%}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.45}
+.btn-dk{background:var(--dk);color:var(--w)}
+.btn-bl{background:var(--b);color:var(--w)}
+.btn-g{background:var(--g);color:var(--w)}
+.btn-or{background:var(--or);color:var(--w)}
+.btn-sm{padding:8px 12px;font-size:11px;border-radius:9px;width:auto}
+
+/* ── QUICK ACTIONS ─────────────── */
+.qacts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.qa{display:flex;align-items:center;gap:10px;padding:14px 12px;border-radius:14px;border:none;cursor:pointer;transition:transform .1s;width:100%}
+.qa:active{transform:scale(.95)}
+.qa .qi{font-size:24px}
+.qa .qt{text-align:left}
+.qa .qt .ql{font-size:12px;font-weight:800;color:var(--dk)}
+.qa .qt .qs{font-size:10px;color:var(--g4);margin-top:1px}
+
+/* ── INPUTS ────────────────────── */
+.inp{width:100%;padding:10px 12px;border:2px solid var(--g2);border-radius:10px;font-size:13px;outline:none;transition:border .2s;font-family:inherit;background:var(--w)}
+.inp:focus{border-color:var(--b)}
+.inp-row{display:flex;gap:8px;align-items:stretch}
+.inp-row .inp{flex:1}
+
+/* ── PROGRESS ──────────────────── */
+.pbar{height:8px;background:var(--g1);border-radius:4px;overflow:hidden;margin-top:6px}
+.pfill{height:100%;border-radius:4px;transition:width .5s ease}
+
+/* ── ANIMATIONS ────────────────── */
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+/* ── TOAST ─────────────────────── */
+#toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);background:var(--dk);color:var(--w);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;display:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.25);border-left:4px solid var(--y);animation:fadeIn .2s;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast.on{display:block}
+#toast.err{border-left-color:var(--red)}
+
+/* ── PIN SCREEN ────────────────── */
+.pdot{width:14px;height:14px;border-radius:50%;border:2px solid var(--g5);transition:all .15s}
+.pdot.f{background:var(--y);border-color:var(--y);transform:scale(1.15)}
+.pdot.e{background:var(--red);border-color:var(--red)}
+.pkey{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.1);color:var(--w);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:background .1s,transform .1s}
+.pkey:active{background:rgba(255,230,0,.25);transform:scale(.9)}
+
+/* ── INICIO ─────────────────────── */
+.tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ti{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;border-radius:14px;border:1.5px solid;min-height:78px;transition:transform .1s;text-decoration:none}
+.ti:active{transform:scale(.93)}
+.ti .icon{font-size:22px}
+.ti .lbl{font-size:10px;font-weight:800;color:var(--dk);text-align:center;line-height:1.2}
+.ti .sub{font-size:9px;color:var(--g4);text-align:center}
+
+/* ── SCRIPTS ────────────────────── */
+.si{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:10px;border:1px solid rgba(0,0,0,.04)}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-left:4px solid}
+.sh-l{display:flex;align-items:center;gap:10px}
+.sh-l .icon{font-size:18px}
+.sh-l .title{font-size:13px;font-weight:800;color:var(--dk)}
+.chev{color:var(--g4);font-size:10px;transition:transform .2s}
+.chev.o{transform:rotate(180deg)}
+.sb{display:none;padding:0 16px 16px}
+.sb.o{display:block;animation:slideUp .2s}
+.stxt{background:var(--g1);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#374151;white-space:pre-wrap;margin-bottom:10px}
+
+/* ── METAS ──────────────────────── */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mc{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:14px;border-left:4px solid;border-top:1px solid rgba(0,0,0,.04);border-right:1px solid rgba(0,0,0,.04);border-bottom:1px solid rgba(0,0,0,.04)}
+.mc .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.mc .lbl{font-size:11px;font-weight:700;color:var(--dk);margin-top:2px;line-height:1.2}
+.mc .meta{font-size:9px;color:var(--g4)}
+.mc .ctrls{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.mc .mb{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;transition:transform .1s}
+.mc .mb:active{transform:scale(.86)}
+.mc .mb.minus{border:2px solid var(--g2);color:var(--g5)}
+.mc .mb.plus{background:var(--dk);color:var(--w)}
+.mc .val{font-size:28px;font-weight:900;color:var(--dk);text-align:center;line-height:1}
+.mc .of{font-size:10px;color:var(--g4)}
+.task{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;margin-bottom:6px;cursor:pointer;transition:background .15s}
+.task:active{transform:scale(.98)}
+.task.done{background:#f0fdf4}
+.tck{width:20px;height:20px;border-radius:6px;border:2px solid var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--w);transition:all .2s}
+.tck.on{background:#22c55e;border-color:#22c55e}
+.tlbl{font-size:12px;font-weight:600;color:var(--dk)}
+.task.done .tlbl{text-decoration:line-through;color:var(--g4)}
+
+/* ── ACCESOS ────────────────────── */
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lc{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;transition:transform .1s;text-decoration:none}
+.lc:active{transform:scale(.93)}
+.lc .icon{font-size:24px;flex-shrink:0}
+.lc .lbl{font-size:12px;font-weight:800;line-height:1.2}
+.lc .sub{font-size:10px;opacity:.75;line-height:1.2}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ii{background:var(--g1);border-radius:10px;padding:10px}
+.ii .ik{font-size:10px;color:var(--g5);font-weight:600}
+.ii .iv{font-size:12px;font-weight:800;color:var(--dk);margin-top:2px}
+
+/* ── BUSCAR ─────────────────────── */
+.ttgl{display:flex;background:var(--g1);border-radius:12px;padding:4px}
+.ttbtn{flex:1;padding:8px 4px;border-radius:9px;font-size:11px;font-weight:700;color:var(--g5);transition:all .2s;text-align:center;cursor:pointer}
+.ttbtn.on{background:var(--w);color:var(--dk);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.rc{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:14px;margin-bottom:10px;animation:slideUp .2s;border:1.5px solid transparent;transition:border-color .15s}
+.rc.selected{border-color:var(--b);background:#f0f9ff}
+.rc h3{font-size:13px;font-weight:800;color:var(--dk)}
+.rc .tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#e0f2fe;color:var(--b);margin-top:3px}
+.rc .det{font-size:11px;color:var(--g5);margin-top:5px;display:flex;align-items:flex-start;gap:4px}
+.rc .acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.ract{padding:8px 10px;border-radius:10px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;transition:transform .1s;text-decoration:none;color:var(--w);flex:1;min-width:0}
+.ract:active{transform:scale(.93)}
+.ract.wa{background:var(--g)}
+.ract.maps{background:var(--g1);color:var(--dk)}
+.ract.li{background:#0077B5}
+.ract.save{background:var(--g1);color:var(--or);border:1.5px solid var(--or)}
+.ract.saved{background:#fff7ed;color:var(--or);border:1.5px solid var(--or)}
+.ract.call{background:#f0fdf4;color:#166534;border:1.5px solid #bbf7d0}
+.aav{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--b),var(--db));display:flex;align-items:center;justify-content:center;color:var(--w);font-weight:900;font-size:13px;flex-shrink:0}
+.cfg-panel{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px;border:1px solid rgba(0,0,0,.04)}
+.cfg-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer}
+.cfg-body{display:none;padding:0 16px 16px}
+.cfg-body.o{display:block;animation:slideUp .2s}
+.cst{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.cst.ok{background:#dcfce7;color:#166534}
+.cst.nd{background:#fee2e2;color:#991b1b}
+.fl{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;margin-top:12px}
+.tip-box{background:rgba(255,230,0,.12);border:1.5px solid var(--y);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.tip-box p{font-size:12px;color:var(--dk);line-height:1.7}
+.err-box{background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:12px;color:#991b1b;font-size:12px;line-height:1.6;white-space:pre-wrap}
+.loading{text-align:center;padding:24px;color:var(--g5);font-size:12px;font-weight:600}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+
+/* ── SELECCIÓN MASIVA ──────────────── */
+#selbar{position:fixed;bottom:58px;left:50%;transform:translateX(-50%) translateY(200px);background:var(--dk);color:#fff;padding:12px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:200;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.35);transition:transform .3s;max-width:calc(100vw - 32px);width:fit-content}
+#selbar.vis{transform:translateX(-50%) translateY(0)}
+#selbar button{background:var(--g);color:#fff;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:800;border:none;cursor:pointer}
+.sel-chk{width:20px;height:20px;border-radius:6px;border:2px solid var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;transition:all .15s;cursor:pointer}
+.sel-chk.on{background:var(--b);border-color:var(--b);color:#fff}
+
+/* ── PROSPECTOS GUARDADOS ──────────── */
+.plist-empty{text-align:center;padding:32px 16px;color:var(--g4)}
+.plist-empty .pe{font-size:40px;margin-bottom:8px}
+.plist-empty p{font-size:12px;line-height:1.7}
+.pc{background:var(--w);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:10px;border:1.5px solid transparent;transition:border-color .15s}
+.pc.on{border-color:var(--b);background:#f0f9ff}
+.pc .pci{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.pc .pcm{flex:1;min-width:0}
+.pc .pcn{font-size:12px;font-weight:800;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .pcs{font-size:10px;color:var(--g4);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .pcck{width:22px;height:22px;border-radius:6px;border:2px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;flex-shrink:0;cursor:pointer}
+.pc .pcck.on{background:var(--b);border-color:var(--b);color:#fff}
+.camp-prog{background:var(--g1);border-radius:12px;padding:14px;margin-top:12px}
+.camp-prog .cp-lbl{font-size:11px;font-weight:700;color:var(--g5);margin-bottom:8px}
+.camp-msg{width:100%;padding:10px 12px;border:2px solid var(--g2);border-radius:10px;font-size:12px;font-family:inherit;resize:none;outline:none;line-height:1.5}
+.camp-msg:focus{border-color:var(--b)}
+
+/* ── MODAL ──────────────────────── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:24px}
+.modal.o{display:flex}
+.mbox{background:var(--w);border-radius:20px;padding:24px;width:100%;max-width:320px;animation:slideUp .2s}
+.mbox h3{font-size:16px;font-weight:900;color:var(--dk);margin-bottom:8px}
+.mbox p{font-size:12px;color:var(--g5);margin-bottom:16px;line-height:1.6}
+.macts{display:flex;gap:10px}
+
+/* ── MISC ───────────────────────── */
+.sc{padding:16px;padding-bottom:24px}
+.sl{font-size:12px;font-weight:900;color:var(--dk);margin-bottom:10px;padding:0 2px}
+.motiv{background:linear-gradient(135deg,var(--dk),var(--b));border-radius:var(--r);padding:16px;text-align:center}
+.motiv p{color:var(--w);font-size:12px;font-weight:600;line-height:1.6}
+.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.55);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;color:var(--dk)}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:var(--b)}
+.wrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.loc-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.3);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:var(--dk);border:none;cursor:pointer;margin-top:6px;max-width:100%}
+.loc-pill:active{background:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PIN SCREEN
+════════════════════════════════════════════════════════════════ -->
+<div id="pin">
+  <div style="font-size:64px;text-align:center;margin-bottom:8px">💛</div>
+  <div style="color:var(--y);font-size:28px;font-weight:900;text-align:center;margin-bottom:4px">Hola Linda</div>
+  <div style="color:var(--g4);font-size:12px;text-align:center;margin-bottom:40px">Mercado Pago Chile</div>
+  <div style="color:var(--g4);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:14px">Ingresa tu PIN</div>
+  <div id="dots" style="display:flex;gap:16px;justify-content:center;margin-bottom:36px">
+    <div class="pdot" id="d0"></div><div class="pdot" id="d1"></div>
+    <div class="pdot" id="d2"></div><div class="pdot" id="d3"></div>
+  </div>
+  <div id="kpad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:260px">
+    <button class="pkey" onclick="pk('1')">1</button>
+    <button class="pkey" onclick="pk('2')">2</button>
+    <button class="pkey" onclick="pk('3')">3</button>
+    <button class="pkey" onclick="pk('4')">4</button>
+    <button class="pkey" onclick="pk('5')">5</button>
+    <button class="pkey" onclick="pk('6')">6</button>
+    <button class="pkey" onclick="pk('7')">7</button>
+    <button class="pkey" onclick="pk('8')">8</button>
+    <button class="pkey" onclick="pk('9')">9</button>
+    <button class="pkey" onclick="pdel()" style="background:rgba(255,255,255,.05);font-size:18px;color:var(--g4)">⌫</button>
+    <button class="pkey" onclick="pk('0')">0</button>
+    <div></div>
+  </div>
+  <div style="color:var(--g5);font-size:10px;text-align:center;margin-top:32px">Acceso exclusivo · Cecilia &amp; Daniel 💛</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     APP
+════════════════════════════════════════════════════════════════ -->
+<div id="app" hidden>
+  <div class="screens">
+
+    <!-- ══ INICIO ══ -->
+    <div id="s-inicio" class="scr on">
+      <div class="hdr-y">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--db)">Mercado Pago Chile 🇨🇱</div>
+            <div id="greet" style="font-size:22px;font-weight:900;color:var(--dk);margin-top:2px">Hola, Cecilia 👋</div>
+            <div style="font-size:11px;font-weight:600;color:var(--db);margin-top:2px">Ejecutiva Smart Point 2</div>
+          </div>
+          <div style="width:44px;height:44px;background:var(--dk);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">💛</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="pill"><span id="dt">...</span><span class="dot"></span><span id="tm" style="color:var(--b)">...</span></div>
+          <button class="loc-pill" onclick="getGPS(null)" id="loc-pill">📍 Obtener ubicación</button>
+        </div>
+      </div>
+      <div class="sc">
+        <!-- Meta rápida -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="ct" style="margin:0">🏆 Meta <span id="wk">Semana</span></div>
+            <span id="meta-badge" style="font-size:11px;color:var(--g5);font-weight:600">En curso</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <div class="wrow"><span style="font-size:12px;font-weight:700;color:var(--g5)">💳 Máquinas vendidas</span><span id="m-maq" style="font-size:12px;font-weight:900;color:var(--dk)">0<span style="color:var(--g4);font-weight:400"> / 3</span></span></div>
+            <div class="pbar"><div id="pb-maq" class="pfill" style="width:0%;background:var(--y)"></div></div>
+          </div>
+          <div>
+            <div class="wrow"><span style="font-size:12px;font-weight:700;color:var(--g5)">🚶 Visitas realizadas</span><span id="m-vis" style="font-size:12px;font-weight:900;color:var(--dk)">0<span style="color:var(--g4);font-weight:400"> / 10</span></span></div>
+            <div class="pbar"><div id="pb-vis" class="pfill" style="width:0%;background:var(--b)"></div></div>
+          </div>
+        </div>
+        <!-- Acciones rápidas de terreno -->
+        <div class="sl">⚡ Acciones Rápidas</div>
+        <div class="qacts">
+          <button class="qa" style="background:#eff6ff;border:1.5px solid #bfdbfe" onclick="quickVisita()">
+            <span class="qi">🚶</span><div class="qt"><div class="ql">Registrar Visita</div><div class="qs">Toca al entrar a un local</div></div>
+          </button>
+          <button class="qa" style="background:#fff7ed;border:1.5px solid #fed7aa" onclick="quickProspecto()">
+            <span class="qi">🔥</span><div class="qt"><div class="ql">Prospecto Caliente</div><div class="qs">¡Interesado encontrado!</div></div>
+          </button>
+          <button class="qa" style="background:#f0fdf4;border:1.5px solid #bbf7d0" onclick="goTab(1)">
+            <span class="qi">🔍</span><div class="qt"><div class="ql">Buscar Cerca</div><div class="qs">Negocios con GPS</div></div>
+          </button>
+          <button class="qa" style="background:#fdf4ff;border:1.5px solid #e9d5ff" onclick="goTab(2)">
+            <span class="qi">📤</span><div class="qt"><div class="ql">Difusión</div><div class="qs" id="prosp-count-lbl">0 prospectos guardados</div></div>
+          </button>
+        </div>
+        <!-- Herramientas -->
+        <div class="sl">🛠️ Herramientas</div>
+        <div class="tool-grid">
+          <a href="https://drive.google.com" target="_blank" class="ti" style="background:#eff6ff;border-color:#bfdbfe"><span class="icon">📊</span><span class="lbl">CRM Drive</span><span class="sub">Prospectos</span></a>
+          <a href="https://drive.google.com" target="_blank" class="ti" style="background:#fffbeb;border-color:#fde68a"><span class="icon">📅</span><span class="lbl">Agenda</span><span class="sub">Drive</span></a>
+          <a href="https://www.instagram.com/" target="_blank" class="ti" style="background:#fdf2f8;border-color:#fbcfe8"><span class="icon">📱</span><span class="lbl">Instagram</span><span class="sub">@ceciliag.mp</span></a>
+          <a href="https://www.mercadopago.cl/point" target="_blank" class="ti" style="background:#fffbeb;border-color:#fde68a"><span class="icon">💳</span><span class="lbl">Smart Point 2</span><span class="sub">Ficha técnica</span></a>
+          <a href="https://drive.google.com" target="_blank" class="ti" style="background:#f0fdf4;border-color:#bbf7d0"><span class="icon">📖</span><span class="lbl">Guía de Ventas</span><span class="sub">Smart Point 2</span></a>
+          <a href="https://drive.google.com" target="_blank" class="ti" style="background:#fff1f2;border-color:#fecdd3"><span class="icon">🎨</span><span class="lbl">Kit Publicidad</span><span class="sub">Digital</span></a>
+        </div>
+        <div class="motiv" style="margin-top:16px">
+          <p>💛 <strong>Smart Point 2</strong> — Sin arriendo, sin mensualidad. Solo éxito.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCRIPTS ══ -->
+    <div id="s-scripts" class="scr">
+      <div class="hdr-dk"><div class="hdr-h1" style="color:var(--w)">💬 Scripts de Venta</div><div class="hdr-sub" style="color:var(--g4)">Toca para expandir · Copia con un click</div></div>
+      <div class="sc">
+        <div class="tip-box"><p><strong>🎯 Sin POS:</strong> "Con la Smart Point 2 empezás a cobrar HOY, sin arriendo, sin mensualidad. $59.900 pago único y plata disponible de inmediato."<br><br><strong>Con otro POS:</strong> "¿Cuánto pagás de arriendo? Con MP solo 2,19% en débito, sin mensualidad. Más barato y abono inmediato."</p></div>
+        <div id="scripts-list"></div>
+      </div>
+    </div>
+
+
+    <!-- ══ DIFUSIÓN ══ -->
+    <div id="s-difusion" class="scr">
+      <div class="hdr-gr"><div class="hdr-h1" style="color:var(--w)">📤 Difusión Masiva</div><div class="hdr-sub" style="color:rgba(255,255,255,.75)">Prospectos guardados · Campaña WhatsApp</div></div>
+      <div class="sc">
+        <!-- Mensaje de campaña -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="ct">✏️ Mensaje de Campaña</div>
+          <textarea id="camp-msg" class="camp-msg" rows="4" placeholder="Ej: Hola [nombre], soy Cecilia de Mercado Pago. Me gustaría presentarles la Smart Point 2: cobro sin arriendo ni mensualidad. ¿Tienen un momento? 💛">Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobro con tarjeta sin arriendo ni mensualidad, por solo $59.900 único. ¿Tienen 5 minutos esta semana? 💛</textarea>
+          <div style="font-size:10px;color:var(--g4);margin-top:6px">Usa <strong>[nombre]</strong> para personalizar automáticamente</div>
+        </div>
+        <!-- Acciones -->
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button onclick="selectAllProspects()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);flex:1">☑️ Seleccionar todo</button>
+          <button onclick="clearProspectSelection()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);flex:1">✖️ Limpiar</button>
+          <button onclick="clearAllProspects()" class="btn btn-sm" style="background:#fee2e2;color:var(--red);flex:1">🗑️ Vaciar</button>
+        </div>
+        <!-- Contador seleccionados -->
+        <div id="camp-sel-bar" style="background:var(--dk);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12px;font-weight:700"><span id="camp-sel-cnt">0</span> seleccionados</div>
+          <button onclick="launchCampaign()" style="background:var(--g);color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:800;border:none;cursor:pointer">💬 Enviar WA</button>
+        </div>
+        <!-- Lista prospectos -->
+        <div class="sl" style="display:flex;align-items:center;justify-content:space-between">
+          <span>👤 Prospectos Guardados</span>
+          <span id="prosp-total" style="font-size:11px;color:var(--g4);font-weight:700">0</span>
+        </div>
+        <div id="prosp-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ BUSCAR ══ -->
+    <div id="s-buscar" class="scr">
+      <div class="hdr-dk"><div class="hdr-h1" style="color:var(--w)">🔍 Buscar Clientes IA</div><div class="hdr-sub" style="color:var(--g4)">Google Maps · Apollo.io · Prospectos en segundos</div></div>
+      <div class="sc">
+        <!-- Config panel -->
+        <div class="cfg-panel">
+          <div class="cfg-head" onclick="toggleCfg()">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span>⚙️</span>
+              <span style="font-size:13px;font-weight:800;color:var(--dk)">Configuración API Keys</span>
+              <span id="cfg-st" class="cst nd">Pendiente</span>
+            </div>
+            <span id="cfg-chev" class="chev">▼</span>
+          </div>
+          <div class="cfg-body" id="cfg-body">
+            <span class="fl">Apify API Token</span>
+            <input id="apify-inp" class="inp" type="password" placeholder="apify_api_XXXXXXXXXX">
+            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ console.apify.com → Account → Integrations</div>
+            <span class="fl">Apollo.io API Key</span>
+            <input id="apollo-inp" class="inp" type="password" placeholder="tu-apollo-api-key">
+            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ app.apollo.io → Settings → Integrations → API</div>
+            <span class="fl" style="margin-top:10px">🔀 Proxy URL <span style="font-weight:400;color:var(--g4)">(opcional)</span></span>
+            <input id="apollo-proxy-inp" class="inp" type="text" placeholder="http://localhost:3000/proxy/apollo">
+            <div style="font-size:10px;color:var(--g4);margin-top:3px">→ Deja vacío si usas extensión CORS · Llena si ejecutas el servidor proxy local</div>
+            <button onclick="saveKeys()" class="btn btn-dk" style="margin-top:14px">💾 Guardar Configuración</button>
+          </div>
+        </div>
+        <!-- Toggle -->
+        <div class="ttgl" style="margin-bottom:14px">
+          <div id="tt-apify" class="ttbtn on" onclick="setSection('apify')">🗺️ Google Maps</div>
+          <div id="tt-apollo" class="ttbtn" onclick="setSection('apollo')">🚀 Apollo.io</div>
+        </div>
+        <!-- Apify section -->
+        <div id="sec-apify">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <span style="font-size:18px">🗺️</span>
+              <div><div style="font-size:13px;font-weight:800;color:var(--dk)">Buscador Google Maps</div><div style="font-size:10px;color:var(--g4)">Vía Apify · Negocios en tu zona</div></div>
+            </div>
+            <input id="tipo-inp" class="inp" placeholder="Tipo de negocio (ej: Peluquería, Café, Ferretería)" style="margin-bottom:8px">
+            <div class="inp-row">
+              <input id="zona-inp" class="inp" placeholder="Zona o ciudad (ej: Providencia)">
+              <button onclick="getGPS('zona-inp')" title="Detectar ubicación actual" style="background:var(--b);color:#fff;padding:0 12px;border-radius:10px;flex-shrink:0;font-size:16px">📍</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+              <button id="apify-btn" onclick="runApify()" class="btn btn-bl">🔍 Buscar</button>
+              <button onclick="runApifyNearMe()" class="btn" style="background:#eff6ff;color:var(--b);border:1.5px solid #bfdbfe">📍 Cerca de mí</button>
+            </div>
+          </div>
+          <div id="apify-err" class="err-box" style="display:none;margin-bottom:14px"></div>
+          <div id="apify-loading" class="loading" style="display:none"><span class="spin">⏳</span> Buscando... puede tomar hasta 90 segundos</div>
+          <div id="apify-sel-summary" style="display:none;font-size:11px;font-weight:700;color:var(--b);margin-bottom:8px;padding:0 2px"></div>
+          <div id="apify-results"></div>
+        </div>
+        <!-- Apollo section -->
+        <div id="sec-apollo" style="display:none">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <span style="font-size:18px">🚀</span>
+              <div><div style="font-size:13px;font-weight:800;color:var(--dk)">Enriquecimiento Apollo.io</div><div style="font-size:10px;color:var(--g4)">Decisores · LinkedIn · Emails</div></div>
+            </div>
+            <input id="emp-inp" class="inp" placeholder="Nombre de empresa (ej: Café El Barista)" style="margin-bottom:8px">
+            <input id="dom-inp" class="inp" placeholder="Dominio web (opcional, ej: elbarista.cl)" style="margin-bottom:10px">
+            <div style="font-size:10px;color:var(--g4);background:var(--g1);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6">💡 <strong>Tip</strong>: Busca por nombre de la empresa que encontraste en Maps para ver quiénes son los dueños o gerentes</div>
+            <button id="apollo-btn" onclick="runApollo()" class="btn btn-dk">🚀 Buscar Contactos Decisores</button>
+          </div>
+          <div id="apollo-err" class="err-box" style="display:none;margin-bottom:14px"></div>
+          <div id="apollo-loading" class="loading" style="display:none"><span class="spin">⏳</span> Buscando contactos...</div>
+          <div id="apollo-sel-summary" style="display:none;font-size:11px;font-weight:700;color:var(--b);margin-bottom:8px;padding:0 2px"></div>
+          <div id="apollo-results"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MÁS (Metas + Accesos) ══ -->
+    <div id="s-mas" class="scr">
+      <!-- Metas header -->
+      <div class="hdr-bl">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div class="hdr-h1" style="color:var(--w)">🎯 Metas &amp; Accesos</div><div class="hdr-sub" style="color:rgba(255,255,255,.65)">Semana actual — auto-reset cada lunes</div></div>
+          <button onclick="showReset()" style="color:rgba(255,255,255,.7);font-size:11px;font-weight:700;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;border:none">↺ Reset</button>
+        </div>
+      </div>
+      <div class="sc">
+        <!-- Meta cards -->
+        <div class="mgrid" id="meta-cards" style="margin-bottom:16px"></div>
+        <!-- Checklist -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="ct" style="margin:0">✅ Checklist Diaria</div>
+            <span id="cl-cnt" style="font-size:12px;color:var(--g4);font-weight:600">0/8</span>
+          </div>
+          <div class="pbar" style="margin-bottom:14px"><div id="cl-bar" class="pfill" style="width:0%;background:var(--y)"></div></div>
+          <div id="tasklist"></div>
+        </div>
+        <!-- Accesos rápidos -->
+        <div class="sl">⚡ Accesos Rápidos</div>
+        <div class="lgrid" style="margin-bottom:16px">
+          <a href="https://www.instagram.com/" target="_blank" class="lc" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:var(--w)"><span class="icon">📱</span><div><div class="lbl">Instagram</div><div class="sub">@ceciliag.mp</div></div></a>
+          <a href="https://wa.me/?text=Hola%2C+soy+Cecilia+de+Mercado+Pago.+Te+escribo+sobre+la+Smart+Point+2+%F0%9F%92%9B" target="_blank" class="lc" style="background:var(--g);color:var(--w)"><span class="icon">💬</span><div><div class="lbl">WhatsApp</div><div class="sub">Mensaje rápido</div></div></a>
+          <a href="https://www.linkedin.com/" target="_blank" class="lc" style="background:#0077B5;color:var(--w)"><span class="icon">💼</span><div><div class="lbl">LinkedIn</div><div class="sub">Perfil profesional</div></div></a>
+          <a href="https://www.mercadopago.cl/point" target="_blank" class="lc" style="background:var(--y);color:var(--dk)"><span class="icon">💳</span><div><div class="lbl">Smart Point 2</div><div class="sub">Ficha producto</div></div></a>
+          <a href="https://drive.google.com" target="_blank" class="lc" style="background:var(--b);color:var(--w)"><span class="icon">📊</span><div><div class="lbl">CRM Drive</div><div class="sub">Prospectos</div></div></a>
+          <a href="https://maps.google.com" target="_blank" class="lc" style="background:var(--g1);color:var(--dk)"><span class="icon">🗺️</span><div><div class="lbl">Google Maps</div><div class="sub">Buscar negocios</div></div></a>
+        </div>
+        <!-- Smart Point 2 info card -->
+        <div class="card">
+          <div class="ct">💳 Smart Point 2 — Datos Clave</div>
+          <div class="igrid">
+            <div class="ii"><div class="ik">💰 Precio</div><div class="iv">$59.900 único</div></div>
+            <div class="ii"><div class="ik">📶 4G</div><div class="iv">Ilimitado gratis</div></div>
+            <div class="ii"><div class="ik">💳 Débito</div><div class="iv">2,19% + IVA</div></div>
+            <div class="ii"><div class="ik">💳 Crédito</div><div class="iv">2,69% + IVA</div></div>
+            <div class="ii"><div class="ik">📱 QR</div><div class="iv">2,6% + IVA</div></div>
+            <div class="ii"><div class="ik">🔒 Arriendo</div><div class="iv">$0 ✅</div></div>
+          </div>
+        </div>
+        <a href="https://wa.me/?text=Hola%21+Soy+Cecilia+de+Mercado+Pago.+Te+contacto+sobre+la+Smart+Point+2+%F0%9F%92%9B" target="_blank" class="btn btn-g" style="margin-top:14px;text-decoration:none">💬 Abrir WhatsApp con mensaje listo</a>
+      </div>
+    </div>
+
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nt on" onclick="goTab(0)"><span class="ni">🏠</span>Inicio</button>
+    <button class="nt"    onclick="goTab(1)"><span class="ni">🔍</span>Buscar</button>
+    <button class="nt"    onclick="goTab(2)"><span class="ni" id="nav-difusion-icon">📤</span>Difusión</button>
+    <button class="nt"    onclick="goTab(3)"><span class="ni">💬</span>Scripts</button>
+    <button class="nt"    onclick="goTab(4)"><span class="ni">⚡</span>Más</button>
+  </nav>
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SELBAR masivo -->
+<div id="selbar">
+  <span id="selbar-txt">0 seleccionados</span>
+  <button onclick="launchSelBarCampaign()">💬 Enviar WA</button>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal" id="reset-modal">
+  <div class="mbox">
+    <h3>¿Resetear la semana?</h3>
+    <p>Esto pondrá todos los contadores en cero y limpiará el checklist. No se puede deshacer.</p>
+    <div class="macts">
+      <button onclick="closeReset()" class="btn" style="border:2px solid var(--g2);color:var(--g5);flex:1">Cancelar</button>
+      <button onclick="doReset()" class="btn" style="background:var(--red);color:var(--w);flex:1">Resetear</button>
+    </div>
+  </div>
+</div>
+
+<!-- VISITA MODAL -->
+<div class="modal" id="visita-modal">
+  <div class="mbox">
+    <h3>🚶 Registrar Visita</h3>
+    <p>¿Cómo fue la visita?</p>
+    <input id="visita-nota" class="inp" placeholder="Nombre del local (opcional)" style="margin-bottom:14px">
+    <div class="macts" style="flex-direction:column;gap:8px">
+      <button onclick="doVisita('fria')" class="btn" style="background:var(--b);color:#fff">❄️ Visita fría (solo presenté)</button>
+      <button onclick="doVisita('interesado')" class="btn" style="background:var(--or);color:#fff">🔥 Interesado (prometió pensar)</button>
+      <button onclick="doVisita('venta')" class="btn" style="background:var(--g);color:#fff">💳 ¡Venta cerrada!</button>
+      <button onclick="closeVisita()" class="btn" style="border:2px solid var(--g2);color:var(--g5)">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PINS ─────────────────────────────────────────────────────────────────────
+const PINS = { '7743': 'Cecilia', '8812': 'Daniel' };
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+const SK = 'hl_store';
+function load() { try { return JSON.parse(localStorage.getItem(SK)||'{}'); } catch { return {}; } }
+function save(d) { localStorage.setItem(SK, JSON.stringify(d)); }
+
+function getWeekKey() {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const day = d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+  const ys = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const w = Math.ceil(((d-ys)/86400000+1)/7);
+  return `${d.getUTCFullYear()}w${String(w).padStart(2,'0')}`;
+}
+
+let S = load();
+const wk = getWeekKey();
+if (S.weekKey !== wk) {
+  // Preserve keys and prospects across weeks, reset only counters/checklist
+  S = { apifyToken:S.apifyToken||'', apolloKey:S.apolloKey||'', apolloProxy:S.apolloProxy||'',
+        prospects:S.prospects||[], weekKey:wk, visitas:0, maquinas:0, prospectos:0, dms:0, checklist:[] };
+  save(S);
+}
+S.apifyToken  = S.apifyToken||'';
+S.apolloKey   = S.apolloKey||'';
+S.apolloProxy = S.apolloProxy||'';
+S.prospects   = S.prospects||[];
+S.checklist   = S.checklist||[];
+
+// ── PIN AUTH ──────────────────────────────────────────────────────────────────
+let pinBuf = [];
+function pk(d) {
+  if (pinBuf.length >= 4) return;
+  pinBuf.push(d);
+  renderDots(false);
+  if (pinBuf.length === 4) {
+    const pin = pinBuf.join('');
+    const name = PINS[pin];
+    if (name) { setTimeout(() => bootApp(name), 200); }
+    else {
+      renderDots(true);
+      document.getElementById('dots').style.animation='none';
+      setTimeout(() => {
+        document.getElementById('dots').style.animation='shake .4s ease';
+        setTimeout(() => { pinBuf=[]; renderDots(false); document.getElementById('dots').style.animation=''; }, 450);
+      }, 10);
+    }
+  }
+}
+function pdel() { pinBuf = pinBuf.slice(0,-1); renderDots(false); }
+function renderDots(err) {
+  for (let i=0;i<4;i++) {
+    const el = document.getElementById('d'+i);
+    el.className = 'pdot' + (i < pinBuf.length ? (err?' e':' f') : '');
+  }
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('app').hidden) return;
+  if (e.key>='0' && e.key<='9') pk(e.key);
+  if (e.key==='Backspace') pdel();
+});
+function bootApp(name) {
+  sessionStorage.setItem('hl_user', name);
+  document.getElementById('pin').style.display='none';
+  document.getElementById('app').removeAttribute('hidden');
+  document.getElementById('greet').textContent = `Hola, ${name} 👋`;
+  initApp();
+}
+// ── TABS (declarar ANTES de _user para evitar TDZ) ───────────────────────────
+const TABS = ['inicio','buscar','difusion','scripts','mas'];
+let activeTab = 0;
+
+// Auto-login diferido para que todos los const se inicialicen primero
+setTimeout(() => {
+  const _user = sessionStorage.getItem('hl_user');
+  if (_user && Object.values(PINS).includes(_user)) bootApp(_user);
+}, 0);
+
+// ── APP INIT ──────────────────────────────────────────────────────────────────
+function initApp() {
+  renderDateTime();
+  setInterval(renderDateTime, 10000);
+  renderMetaCards();
+  renderScripts();
+  renderTaskList();
+  refreshMiniMeta();
+  loadKeys();
+  updateCfgStatus();
+  renderProspectList();
+  updateProspectBadge();
+  const n = parseInt(sessionStorage.getItem('hl_tab')||'0');
+  goTab(n);
+}
+
+// ── DATETIME ──────────────────────────────────────────────────────────────────
+function renderDateTime() {
+  const now = new Date();
+  const date = now.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('dt').textContent = date.charAt(0).toUpperCase()+date.slice(1);
+  document.getElementById('tm').textContent = now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  const sem = Math.ceil(((now-new Date(now.getFullYear(),0,1))/86400000+1)/7);
+  document.getElementById('wk').textContent = 'Semana '+sem;
+}
+function goTab(i) {
+  // clamp to valid range
+  if (i < 0 || i >= TABS.length) i = 0;
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nt').forEach(n=>n.classList.remove('on'));
+  document.getElementById('s-'+TABS[i]).classList.add('on');
+  document.querySelectorAll('.nt')[i].classList.add('on');
+  activeTab = i;
+  sessionStorage.setItem('hl_tab', i);
+  if (TABS[i]==='mas')      { refreshMetaCards(); }
+  if (TABS[i]==='difusion') { renderProspectList(); }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastT;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'on'+(err?' err':'');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.className='', 3000);
+}
+
+// ── GPS / GEOLOCATION ────────────────────────────────────────────────────────
+let lastCoords = null;
+function getGPS(targetInputId) {
+  if (!navigator.geolocation) { toast('GPS no disponible en este dispositivo','err'); return; }
+  toast('📍 Detectando ubicación...');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      lastCoords = pos.coords;
+      // Reverse geocode via Nominatim (free, no key needed)
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=es`, {
+        headers: { 'Accept-Language': 'es', 'User-Agent': 'HolaLinda/1.0' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        const addr = data.address || {};
+        const barrio = addr.suburb || addr.neighbourhood || addr.city_district || addr.quarter || '';
+        const ciudad = addr.city || addr.town || addr.municipality || '';
+        const zona = [barrio, ciudad].filter(Boolean).join(', ');
+        if (targetInputId) {
+          document.getElementById(targetInputId).value = zona || `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+          toast('📍 Ubicación detectada: ' + (zona||'coordenadas'));
+        }
+        // Update location pill on Inicio
+        const pill = document.getElementById('loc-pill');
+        if (pill) { pill.textContent = '📍 ' + (zona || 'Ubicación detectada'); }
+      })
+      .catch(() => {
+        if (targetInputId) document.getElementById(targetInputId).value = `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+        toast('📍 Ubicación detectada (sin nombre)');
+      });
+    },
+    err => { toast('No se pudo obtener GPS: ' + (err.code===1?'Permiso denegado':'Tiempo agotado'), 'err'); },
+    { timeout: 10000, enableHighAccuracy: true }
+  );
+}
+
+// ── QUICK ACTIONS (TERRENO) ───────────────────────────────────────────────────
+function quickVisita() {
+  document.getElementById('visita-nota').value = '';
+  document.getElementById('visita-modal').classList.add('o');
+}
+function closeVisita() { document.getElementById('visita-modal').classList.remove('o'); }
+function doVisita(tipo) {
+  const nota = document.getElementById('visita-nota').value.trim();
+  S.visitas = (S.visitas||0) + 1;
+  if (tipo === 'interesado') { S.prospectos = (S.prospectos||0) + 1; }
+  if (tipo === 'venta') { S.maquinas = (S.maquinas||0) + 1; S.prospectos = (S.prospectos||0) + 1; }
+  save(S);
+  refreshMiniMeta();
+  closeVisita();
+  const msgs = { fria:'🚶 Visita registrada', interesado:'🔥 ¡Prospecto caliente guardado!', venta:'🎉 ¡Venta cerrada! Felicitaciones 💛' };
+  toast(msgs[tipo]);
+  if (tipo==='venta' && S.maquinas >= 3) setTimeout(()=>toast('🏆 ¡Meta de máquinas cumplida!'), 1200);
+}
+function quickProspecto() {
+  S.prospectos = (S.prospectos||0) + 1;
+  save(S); refreshMiniMeta();
+  toast('🔥 ¡Prospecto caliente +1!');
+  // Small animation on Inicio meta card
+  const el = document.getElementById('mv-prospectos');
+  if (el) { el.style.animation='pulse .4s ease'; setTimeout(()=>el.style.animation='',500); }
+}
+
+// ── SCRIPTS ───────────────────────────────────────────────────────────────────
+const SCRIPTS_DATA = [
+  { icon:'🚶', title:'Primer Contacto Presencial', color:'var(--b)',
+    txt:`PASO 1 — Saludo (10 seg)
+"Buenos días, soy Cecilia, ejecutiva de Mercado Pago. Visito negocios del sector para presentarles una solución de cobro que está ayudando a muchos comercios a vender más y cobrar más fácil."
+
+PASO 2 — Diagnóstico (20 seg)
+"¿Actualmente aceptan pago con tarjeta o solo efectivo?"
+Si tiene otro POS: "¿Qué sistema usan? ¿Están conformes con los costos y el abono?"
+
+PASO 3 — Propuesta (30 seg)
+"La Smart Point 2 de Mercado Pago tiene 4G ilimitado gratis, acepta todas las tarjetas y QR, y el dinero de sus ventas disponible DE INMEDIATO. Sin arriendo, sin mensualidad. Un solo pago de $59.900."
+
+PASO 4 — Demo
+Muestra la máquina o fotos/video. Destaca: pantalla táctil, impresora integrada, diseño compacto.
+
+PASO 5 — Cierre
+"¿Le gustaría que lo asesore y muestre cómo configurarla hoy mismo? Sin costo adicional, yo la acompaño en todo el proceso."` },
+  { icon:'📱', title:'Mensaje WhatsApp Frío', color:'var(--g)',
+    txt:`Plantilla 1 — Directo:
+"Hola [Nombre], soy Cecilia de Mercado Pago 👋. Vi su negocio y me gustaría presentarles la Smart Point 2: cobro con tarjeta sin arriendo ni mensualidad. Solo $59.900 y abono inmediato. ¿Les interesa saber más? 💛"
+
+Plantilla 2 — Con gancho:
+"Hola [Nombre] 👋, Cecilia de Mercado Pago. ¿Sabía que el 68% de los clientes prefieren pagar con tarjeta? Con la Smart Point 2 captura esas ventas sin pagar arriendo mensual. ¿Le cuento en 2 minutos cómo funciona?"
+
+Plantilla 3 — Comparativa:
+"Hola [Nombre], ¿cuánto paga mensualmente por su terminal? Con MP paga $0 de arriendo. Solo 2,19% cuando vende. Muchos negocios ahorran más de $30.000/mes. ¿Le hago el cálculo?"` },
+  { icon:'📞', title:'Seguimiento 2 Días Después', color:'var(--y)',
+    txt:`Sin respuesta al primer mensaje:
+"Hola [Nombre] 😊, Cecilia de Mercado Pago nuevamente. Quería saber si tuvo un momento para revisar mi mensaje sobre la Smart Point 2. Si prefiere, puedo pasar personalmente en el horario que les acomode."
+
+Si mostró interés pero no cerró:
+"Hola [Nombre], ¿cómo están? Quedamos en que le iba a escribir hoy. ¿Pudieron ver los beneficios de la Smart Point 2? Tengo disponibilidad esta semana para hacer la demo y activar la máquina el mismo día. ¿Cuándo les viene bien?"
+
+Si dijo 'lo pensamos':
+"Hola [Nombre], solo quería recordarles que la oferta sigue vigente 💛. Muchos negocios del sector ya están cobrando con MP sin pagar arriendo. Si tienen alguna duda puntual, con gusto se la resuelvo ahora mismo."` },
+  { icon:'💰', title:'Objeción: "Es muy caro"', color:'#fb923c',
+    txt:`"Entiendo la preocupación, y me alegra que lo mencione. La Smart Point 2 tiene un pago único de $59.900 — sin arriendo, sin mensualidad.
+
+El cobro de 2,19% en débito es solo cuando usted vende. Si vende $1.000.000 al mes, paga menos de $22.000 en comisiones totales. Compare eso con el arriendo mensual de otras terminales que supera los $30.000.
+
+¿Cuánto vende aproximadamente al mes? Le hago el cálculo exacto para que vea la diferencia."
+
+Dato de cierre: "La mayoría de nuestros clientes recuperan la inversión en la primera semana de uso."` },
+  { icon:'🤔', title:'Objeción: "Déjeme pensarlo"', color:'#c084fc',
+    txt:`"Por supuesto, es una decisión importante. Para ayudarle a pensar, ¿qué es lo que más dudas le genera? Así le doy información concreta ahora mismo."
+
+Si menciona precio → usar objeción "es muy caro"
+
+Si menciona tiempo:
+"El proceso de activación toma menos de 15 minutos y yo le acompaño en todo. ¿Le vendría bien mañana a las 10:00 o por la tarde?"
+
+Si menciona consultar con alguien:
+"Perfecto. ¿Quiere que le prepare un resumen por escrito para mostrarle a su socio/esposa? Lo envío por WhatsApp ahora mismo."` },
+  { icon:'🏪', title:'Objeción: "Tengo otro proveedor"', color:'#f87171',
+    txt:`"¡Qué bien que ya tienen terminal! ¿Puedo preguntarle cuál usan actualmente?"
+
+Si es Transbank:
+"Transbank es bueno, pero ¿sabe cuánto paga de arriendo mensual? La mayoría paga entre $15.000 y $35.000/mes además de las comisiones. Con MP paga $0 de arriendo. ¿Le hago la comparación con su facturación actual?"
+
+Si es otro POS:
+"¿Cuánto paga de arriendo mensual? Con Mercado Pago no hay arriendo ni mensualidad de ningún tipo. El dinero llega inmediato y acepta todas las tarjetas igual que ellos."
+
+Cierre:
+"No le pido que cambie hoy. Solo que compare los números. Si al final su proveedor actual le conviene más, le digo con toda honestidad que se quede con ellos. Pero casi nunca pasa eso 😄"` }
+];
+function renderScripts() {
+  document.getElementById('scripts-list').innerHTML = SCRIPTS_DATA.map((s,i)=>`
+    <div class="si">
+      <div class="sh" style="border-left-color:${s.color}" onclick="toggleScript(${i})">
+        <div class="sh-l"><span class="icon">${s.icon}</span><span class="title">${s.title}</span></div>
+        <span id="sc-chev-${i}" class="chev">▼</span>
+      </div>
+      <div id="sc-body-${i}" class="sb">
+        <div class="stxt">${esc(s.txt)}</div>
+        <button onclick="copyScript(${i})" class="btn btn-dk">📋 Copiar al portapapeles</button>
+      </div>
+    </div>`).join('');
+}
+function toggleScript(i) {
+  document.getElementById('sc-body-'+i).classList.toggle('o');
+  document.getElementById('sc-chev-'+i).classList.toggle('o');
+}
+function copyScript(i) {
+  navigator.clipboard.writeText(SCRIPTS_DATA[i].txt)
+    .then(()=>toast('"'+SCRIPTS_DATA[i].title+'" copiado ✅'))
+    .catch(()=>{
+      const ta=document.createElement('textarea'); ta.value=SCRIPTS_DATA[i].txt;
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast('"'+SCRIPTS_DATA[i].title+'" copiado ✅');
+    });
+}
+
+// ── METAS ─────────────────────────────────────────────────────────────────────
+const META_CFG = [
+  { key:'visitas',    icon:'🚶', label:'Visitas en terreno',   meta:10, color:'#009EE3' },
+  { key:'maquinas',   icon:'💳', label:'Máquinas vendidas',    meta:3,  color:'#FFE600' },
+  { key:'prospectos', icon:'🔥', label:'Prospectos calientes', meta:5,  color:'#fb923c' },
+  { key:'dms',        icon:'📲', label:'DMs Instagram',        meta:3,  color:'#f472b6' },
+];
+function renderMetaCards() {
+  document.getElementById('meta-cards').innerHTML = META_CFG.map(m=>`
+    <div class="mc" style="border-left-color:${m.color}">
+      <div class="top"><span style="font-size:18px">${m.icon}</span>${S[m.key]>=m.meta?'<span style="font-size:16px">🏆</span>':''}</div>
+      <div class="lbl">${m.label}</div><div class="meta">Meta: ${m.meta}</div>
+      <div class="ctrls">
+        <button class="mb minus" onclick="chMeta('${m.key}',-1)">−</button>
+        <div style="text-align:center"><div class="val" id="mv-${m.key}">${S[m.key]}</div><div class="of">/ ${m.meta}</div></div>
+        <button class="mb plus" onclick="chMeta('${m.key}',1)">+</button>
+      </div>
+      <div class="pbar"><div id="mpb-${m.key}" class="pfill" style="width:${Math.min(100,Math.round(S[m.key]/m.meta*100))}%;background:${m.color}"></div></div>
+    </div>`).join('');
+}
+function refreshMetaCards() { renderMetaCards(); refreshMiniMeta(); renderTaskList(); }
+function chMeta(key, delta) {
+  const cfg = META_CFG.find(m=>m.key===key);
+  const prev = S[key];
+  S[key] = Math.max(0, (S[key]||0)+delta);
+  save(S);
+  document.getElementById('mv-'+key).textContent = S[key];
+  document.getElementById('mpb-'+key).style.width = Math.min(100,Math.round(S[key]/cfg.meta*100))+'%';
+  const top = document.querySelectorAll('.mc')[META_CFG.findIndex(m=>m.key===key)];
+  if (top) { const t=top.querySelector('.top'); if(S[key]>=cfg.meta&&!t.querySelector('.t2')){const sp=document.createElement('span');sp.className='t2';sp.style.fontSize='16px';sp.textContent='🏆';t.appendChild(sp);} }
+  if (delta>0 && prev<cfg.meta && S[key]>=cfg.meta) toast('🎉 ¡Meta de '+cfg.label+' cumplida!');
+  refreshMiniMeta();
+}
+function refreshMiniMeta() {
+  const v=S.visitas||0, m=S.maquinas||0;
+  const vis=document.getElementById('m-vis'); if(vis){vis.innerHTML=v+'<span style="color:var(--g4);font-weight:400"> / 10</span>';}
+  const maq=document.getElementById('m-maq'); if(maq){maq.innerHTML=m+'<span style="color:var(--g4);font-weight:400"> / 3</span>';}
+  const pv=document.getElementById('pb-vis'); if(pv) pv.style.width=Math.min(100,Math.round(v/10*100))+'%';
+  const pm=document.getElementById('pb-maq'); if(pm) pm.style.width=Math.min(100,Math.round(m/3*100))+'%';
+  const badge=document.getElementById('meta-badge'); if(badge){badge.textContent=(m>=3&&v>=10)?'🎉 ¡Cumplida!':'En curso';}
+}
+
+// ── TASKLIST ──────────────────────────────────────────────────────────────────
+const TASKS = [
+  {id:'ag',  lbl:'📋 Revisar agenda y ruta del día'},
+  {id:'v5',  lbl:'🚶 Realizar al menos 5 visitas en terreno'},
+  {id:'wa3', lbl:'📱 Enviar 3 mensajes de WhatsApp nuevos'},
+  {id:'crm', lbl:'📊 Registrar nuevos prospectos en CRM'},
+  {id:'ig1', lbl:'📲 Enviar 1 DM en Instagram'},
+  {id:'seg', lbl:'🔄 Hacer seguimiento de ayer'},
+  {id:'met', lbl:'🎯 Actualizar contadores de metas'},
+  {id:'pln', lbl:'🌙 Planificar visitas de mañana'},
+];
+function renderTaskList() {
+  const cl = S.checklist||[];
+  document.getElementById('cl-cnt').textContent = cl.length+'/'+TASKS.length;
+  document.getElementById('cl-bar').style.width = Math.round(cl.length/TASKS.length*100)+'%';
+  document.getElementById('tasklist').innerHTML = TASKS.map(t=>{
+    const dn=cl.includes(t.id);
+    return `<div class="task ${dn?'done':''}" onclick="toggleTask('${t.id}')">
+      <div class="tck ${dn?'on':''}">${dn?'✓':''}</div>
+      <span class="tlbl">${t.lbl}</span></div>`;
+  }).join('');
+}
+function toggleTask(id) {
+  const cl = S.checklist||[];
+  S.checklist = cl.includes(id) ? cl.filter(x=>x!==id) : [...cl,id];
+  save(S); renderTaskList();
+  if (S.checklist.length===TASKS.length) toast('🎉 ¡Día completado!');
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function showReset() { document.getElementById('reset-modal').classList.add('o'); }
+function closeReset() { document.getElementById('reset-modal').classList.remove('o'); }
+function doReset() {
+  S.visitas=0; S.maquinas=0; S.prospectos=0; S.dms=0; S.checklist=[];
+  save(S); refreshMetaCards(); closeReset(); toast('Metas de la semana reseteadas');
+}
+
+// ── CONFIG / KEYS ─────────────────────────────────────────────────────────────
+function loadKeys() {
+  document.getElementById('apify-inp').value = S.apifyToken||'';
+  document.getElementById('apollo-inp').value = S.apolloKey||'';
+  document.getElementById('apollo-proxy-inp').value = S.apolloProxy||'';
+}
+function saveKeys() {
+  S.apifyToken  = document.getElementById('apify-inp').value.trim();
+  S.apolloKey   = document.getElementById('apollo-inp').value.trim();
+  S.apolloProxy = document.getElementById('apollo-proxy-inp').value.trim();
+  save(S); toast('Configuración guardada 💛');
+  updateCfgStatus();
+  document.getElementById('cfg-body').classList.remove('o');
+  document.getElementById('cfg-chev').classList.remove('o');
+}
+function updateCfgStatus() {
+  const both = S.apifyToken && S.apolloKey;
+  const st = document.getElementById('cfg-st');
+  if(st) { st.className='cst '+(both?'ok':'nd'); st.textContent=both?'Listas ✓':'Pendiente'; }
+}
+function toggleCfg() {
+  document.getElementById('cfg-body').classList.toggle('o');
+  document.getElementById('cfg-chev').classList.toggle('o');
+}
+
+// ── SECTION TOGGLE ────────────────────────────────────────────────────────────
+function setSection(s) {
+  document.getElementById('sec-apify').style.display  = s==='apify'  ? 'block':'none';
+  document.getElementById('sec-apollo').style.display = s==='apollo' ? 'block':'none';
+  document.getElementById('tt-apify').className  = 'ttbtn'+(s==='apify' ?' on':'');
+  document.getElementById('tt-apollo').className = 'ttbtn'+(s==='apollo'?' on':'');
+}
+
+// ── PROSPECTOS GUARDADOS ──────────────────────────────────────────────────────
+let prospectSel = new Set();
+
+function saveProspect(p) {
+  // p: { id, name, phone, type, address, category, source }
+  const exists = S.prospects.some(x => x.id === p.id);
+  if (exists) { toast('Ya está guardado','err'); return; }
+  S.prospects.push(p);
+  save(S);
+  updateProspectBadge();
+  toast('💾 Guardado en Difusión');
+}
+
+function removeProspect(id) {
+  S.prospects = S.prospects.filter(p => p.id !== id);
+  prospectSel.delete(id);
+  save(S);
+  renderProspectList();
+  updateProspectBadge();
+  updateSelBar();
+}
+
+function clearAllProspects() {
+  if (S.prospects.length === 0) { toast('Lista ya vacía'); return; }
+  if (confirm('¿Vaciar todos los prospectos guardados?')) {
+    S.prospects = []; prospectSel.clear(); save(S);
+    renderProspectList(); updateProspectBadge(); updateSelBar();
+    toast('Lista vaciada');
+  }
+}
+
+function updateProspectBadge() {
+  const n = S.prospects.length;
+  // Nav badge
+  const icon = document.getElementById('nav-difusion-icon');
+  let badge = icon ? icon.querySelector('.nbadge') : null;
+  if (n > 0) {
+    if (!badge) { badge = document.createElement('span'); badge.className='nbadge'; if(icon)icon.appendChild(badge); }
+    if(badge) badge.textContent = n > 99 ? '99+' : n;
+  } else {
+    if (badge) badge.remove();
+  }
+  // Inicio label
+  const lbl = document.getElementById('prosp-count-lbl');
+  if (lbl) lbl.textContent = n + ' prospecto' + (n===1?'':'s') + ' guardado' + (n===1?'':'s');
+  // Difusion total
+  const tot = document.getElementById('prosp-total');
+  if (tot) tot.textContent = n;
+}
+
+function renderProspectList() {
+  const el = document.getElementById('prosp-list');
+  if (!el) return;
+  if (S.prospects.length === 0) {
+    el.innerHTML = `<div class="plist-empty"><div class="pe">📭</div><p>Sin prospectos guardados aún.<br>Busca negocios en <strong>Buscar</strong> y toca<br>⭐ Guardar en cada resultado.</p></div>`;
+    updateSelCampBar(); return;
+  }
+  el.innerHTML = S.prospects.map(p => {
+    const on = prospectSel.has(p.id);
+    const typeIcon = p.source==='apollo' ? '🚀' : '🗺️';
+    const phone = (p.phone||'').replace(/\D/g,'');
+    const waNum = phone ? (phone.startsWith('56')?phone:'56'+phone) : '';
+    return `<div class="pc ${on?'on':''}" id="pcard-${p.id}">
+      <div class="pci" style="background:${on?'var(--b)':'var(--g1)'};">${typeIcon}</div>
+      <div class="pcm">
+        <div class="pcn">${esc(p.name)}</div>
+        <div class="pcs">${esc([p.category,p.address||p.location].filter(Boolean).join(' · '))}</div>
+        ${phone?`<div class="pcs" style="color:var(--g)">📞 ${esc(p.phone)}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+        ${waNum?`<a href="https://wa.me/${waNum}" target="_blank" style="background:var(--g);color:#fff;padding:5px 8px;border-radius:8px;font-size:10px;font-weight:700;text-align:center">💬</a>`:''}
+        <button onclick="removeProspect('${p.id}')" style="background:#fee2e2;color:var(--red);padding:5px 8px;border-radius:8px;font-size:10px;font-weight:700;border:none;cursor:pointer">✕</button>
+      </div>
+      <div class="pcck ${on?'on':''}" onclick="toggleProspectSel('${p.id}')">${on?'✓':''}</div>
+    </div>`;
+  }).join('');
+  updateSelCampBar();
+}
+
+function toggleProspectSel(id) {
+  if (prospectSel.has(id)) prospectSel.delete(id);
+  else prospectSel.add(id);
+  renderProspectList();
+  updateSelBar();
+}
+
+function selectAllProspects() {
+  S.prospects.forEach(p => prospectSel.add(p.id));
+  renderProspectList(); updateSelBar();
+}
+function clearProspectSelection() {
+  prospectSel.clear(); renderProspectList(); updateSelBar();
+}
+
+function updateSelCampBar() {
+  const n = prospectSel.size;
+  const bar = document.getElementById('camp-sel-bar');
+  if (bar) {
+    bar.style.display = n > 0 ? 'flex' : 'none';
+    const cnt = document.getElementById('camp-sel-cnt');
+    if (cnt) cnt.textContent = n;
+  }
+}
+
+function launchCampaign() {
+  const selected = S.prospects.filter(p => prospectSel.has(p.id));
+  if (!selected.length) { toast('Selecciona al menos 1 prospecto','err'); return; }
+  const msgTemplate = document.getElementById('camp-msg').value.trim() ||
+    'Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2. ¿Tienen un momento? 💛';
+  const withPhone = selected.filter(p => (p.phone||'').replace(/\D/g,'').length >= 8);
+  if (!withPhone.length) {
+    toast('Ningún prospecto seleccionado tiene teléfono','err'); return;
+  }
+  if (!confirm(`Se abrirá WhatsApp para ${withPhone.length} contacto${withPhone.length>1?'s':''} (uno por uno). ¿Continuar?`)) return;
+  launchBulkWA(withPhone, msgTemplate, 0);
+}
+
+function launchBulkWA(list, template, idx) {
+  if (idx >= list.length) { toast('🎉 Campaña completada: '+list.length+' mensajes'); return; }
+  const p = list[idx];
+  const phone = (p.phone||'').replace(/\D/g,'');
+  const waNum = phone.startsWith('56') ? phone : '56'+phone;
+  const firstName = p.name.split(' ')[0] || p.name;
+  const msg = template.replace(/\[nombre\]/gi, firstName);
+  // Track
+  S.dms = (S.dms||0) + 1; save(S);
+  window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg), '_blank');
+  if (idx + 1 < list.length) {
+    setTimeout(() => {
+      toast(`💬 ${idx+1}/${list.length} enviados — próximo: ${list[idx+1].name.split(' ')[0]}`);
+      launchBulkWA(list, template, idx+1);
+    }, 1800);
+  } else {
+    setTimeout(() => { toast('🎉 Campaña completada: '+list.length+' mensajes'); refreshMiniMeta(); }, 800);
+  }
+}
+
+// ── SELBAR (desde resultados de búsqueda) ─────────────────────────────────────
+let searchSel = new Set(); // ids seleccionados en resultados búsqueda
+let searchResults = []; // último batch de resultados
+
+function toggleSearchSel(id) {
+  if (searchSel.has(id)) searchSel.delete(id);
+  else searchSel.add(id);
+  const card = document.getElementById('src-'+id);
+  if (card) card.classList.toggle('selected', searchSel.has(id));
+  const chk = document.getElementById('chk-'+id);
+  if (chk) { chk.className='sel-chk'+(searchSel.has(id)?' on':''); chk.textContent=searchSel.has(id)?'✓':''; }
+  updateSelBar();
+}
+
+function updateSelBar() {
+  const n = searchSel.size;
+  const bar = document.getElementById('selbar');
+  const txt = document.getElementById('selbar-txt');
+  if (txt) txt.textContent = n + ' seleccionado'+(n===1?'':'s');
+  bar.classList.toggle('vis', n > 0);
+  updateSelCampBar();
+}
+
+function launchSelBarCampaign() {
+  const selected = searchResults.filter(p => searchSel.has(p._id));
+  if (!selected.length) { toast('Sin selección','err'); return; }
+  const msgTemplate = 'Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobro sin arriendo ni mensualidad, por $59.900. ¿Tienen un momento? 💛';
+  const withPhone = selected.filter(p => (p._phone||'').length >= 8);
+  if (!withPhone.length) { toast('Sin teléfono en los seleccionados','err'); return; }
+  if (!confirm(`Enviar WA a ${withPhone.length} contacto${withPhone.length>1?'s':''}?`)) return;
+  launchBulkWASearch(withPhone, msgTemplate, 0);
+}
+
+function launchBulkWASearch(list, template, idx) {
+  if (idx >= list.length) { toast('🎉 Campaña completada'); return; }
+  const p = list[idx];
+  const firstName = (p._name||'').split(' ')[0] || p._name;
+  const msg = template.replace(/\[nombre\]/gi, firstName);
+  window.open('https://wa.me/'+p._phone+'?text='+encodeURIComponent(msg), '_blank');
+  S.dms=(S.dms||0)+1; save(S);
+  if (idx+1 < list.length) {
+    setTimeout(()=>{ toast(`💬 ${idx+1}/${list.length} — próximo: ${list[idx+1]._name.split(' ')[0]}`); launchBulkWASearch(list,template,idx+1); }, 1800);
+  }
+}
+
+// ── APIFY ─────────────────────────────────────────────────────────────────────
+async function runApify() {
+  const token = S.apifyToken;
+  if (!token) { showApifyErr('Ingresa tu Apify API Token en la configuración ⬆️'); return; }
+  const tipo = document.getElementById('tipo-inp').value.trim();
+  const zona = document.getElementById('zona-inp').value.trim();
+  if (!tipo||!zona) { toast('Completa tipo y zona','err'); return; }
+  doApifySearch(`${tipo} ${zona} Chile`);
+}
+
+async function runApifyNearMe() {
+  const token = S.apifyToken;
+  if (!token) { showApifyErr('Ingresa tu Apify API Token en la configuración ⬆️'); return; }
+  const tipo = document.getElementById('tipo-inp').value.trim();
+  if (!tipo) { toast('Ingresa el tipo de negocio primero','err'); return; }
+  if (!navigator.geolocation) { toast('GPS no disponible','err'); return; }
+  toast('📍 Obteniendo ubicación...');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      lastCoords = pos.coords;
+      // Use coordinates directly in the search query
+      const query = `${tipo} cerca de ${pos.coords.latitude.toFixed(4)},${pos.coords.longitude.toFixed(4)} Chile`;
+      doApifySearch(query, pos.coords);
+    },
+    err => toast('GPS: '+(err.code===1?'Permiso denegado':'Error'),'err'),
+    { timeout:10000, enableHighAccuracy:true }
+  );
+}
+
+async function doApifySearch(searchQuery, coords) {
+  document.getElementById('apify-err').style.display='none';
+  document.getElementById('apify-results').innerHTML='';
+  document.getElementById('apify-sel-summary').style.display='none';
+  document.getElementById('apify-loading').style.display='block';
+  document.getElementById('apify-btn').disabled=true;
+  searchSel.clear(); searchResults=[];
+
+  const token = S.apifyToken;
+  const body = { searchStringsArray:[searchQuery], maxCrawledPlacesPerSearch:15, language:'es', countryCode:'CL' };
+  if (coords) { body.lat = coords.latitude; body.lng = coords.longitude; body.zoom = 14; }
+
+  try {
+    const run = await fetch(
+      `https://api.apify.com/v2/acts/nwua9Gu5YkAT5Htz3/runs?token=${encodeURIComponent(token)}&waitForFinish=90`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
+    );
+    if (!run.ok) { const e=await run.json().catch(()=>({})); throw new Error(e.error?.message||`Error ${run.status}`); }
+    const rd = await run.json();
+    const dsId = rd?.data?.defaultDatasetId;
+    if (!dsId) throw new Error('No se obtuvo dataset del scraper');
+    const items = await fetch(`https://api.apify.com/v2/datasets/${dsId}/items?token=${encodeURIComponent(token)}&clean=true&limit=15`).then(r=>r.json());
+    if (!items.length) { showApifyErr('Sin resultados. Prueba con otro tipo o zona.'); }
+    else renderApifyResults(items);
+  } catch(e) {
+    showApifyErr(e.message||'Error de red');
+  } finally {
+    document.getElementById('apify-loading').style.display='none';
+    document.getElementById('apify-btn').disabled=false;
+  }
+}
+
+function showApifyErr(msg) {
+  const el = document.getElementById('apify-err');
+  el.textContent = msg; el.style.display='block';
+}
+
+function renderApifyResults(items) {
+  const el = document.getElementById('apify-results');
+  const sumEl = document.getElementById('apify-sel-summary');
+  sumEl.style.display='block';
+  sumEl.textContent = items.length+' negocios encontrados · Toca ☑️ para seleccionar · ⭐ para guardar';
+
+  el.innerHTML = '';
+  items.forEach((p,i) => {
+    const rawPhone = (p.phoneUnformatted||p.phone||'').replace(/\D/g,'');
+    const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
+    const waMsg = encodeURIComponent('Hola, soy Cecilia de Mercado Pago. Me gustaría contarles sobre la Smart Point 2, nuestra terminal sin arriendo. ¿Tienen 5 minutos? 💛');
+    const id = 'apy_'+i+'_'+(p.placeId||i);
+    const phone = p.phone||p.phoneUnformatted||'';
+
+    // Register for bulk selection
+    p._id = id; p._name = p.title||'Negocio'; p._phone = waNum;
+    searchResults.push(p);
+
+    // Pre-check if already saved
+    const alreadySaved = S.prospects.some(x => x.id === id);
+
+    el.innerHTML += `<div class="rc" id="src-${id}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div class="sel-chk" id="chk-${id}" onclick="toggleSearchSel('${id}')"></div>
+        <div style="flex:1;min-width:0">
+          <h3>${esc(p.title||'Sin nombre')}</h3>
+          ${p.categoryName?`<span class="tag">${esc(p.categoryName)}</span>`:''}
+          ${p.address?`<div class="det">📍 ${esc(p.address)}</div>`:''}
+          ${phone?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${esc(phone)}').then(()=>toast('📋 Copiado'))">📞 ${esc(phone)}</div>`:''}
+          ${p.rating?`<div class="det">⭐ ${p.rating.toFixed(1)}${p.reviewsCount?' ('+p.reviewsCount+')':''}</div>`:''}
+          ${p.website?`<div class="det">🌐 <a href="${p.website}" target="_blank" style="color:var(--b)">${esc(p.website.replace(/^https?:\/\//,''))}</a></div>`:''}
+          <div class="acts">
+            ${waNum?`<a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="ract wa">💬 WA</a>`:''}
+            ${phone?`<a href="tel:${phone}" class="ract call">📞 Llamar</a>`:''}
+            ${p.url?`<a href="${p.url}" target="_blank" class="ract maps">🗺️ Maps</a>`:''}
+            <button class="ract save ${alreadySaved?'saved':''}" id="savebtn-${id}" onclick="saveApifyProspect('${id}',${i})">
+              ${alreadySaved?'⭐ Guardado':'☆ Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+}
+
+function saveApifyProspect(id, idx) {
+  const p = searchResults.find(x => x._id === id);
+  if (!p) return;
+  const rawPhone = (p.phoneUnformatted||p.phone||'').replace(/\D/g,'');
+  const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
+  saveProspect({
+    id, name: p.title||'Sin nombre',
+    phone: waNum || rawPhone,
+    category: p.categoryName||'Negocio',
+    address: p.address||'',
+    source: 'apify'
+  });
+  const btn = document.getElementById('savebtn-'+id);
+  if (btn) { btn.className='ract saved'; btn.textContent='⭐ Guardado'; }
+}
+
+// ── APOLLO ────────────────────────────────────────────────────────────────────
+async function runApollo() {
+  const key = S.apolloKey;
+  if (!key) { showApolloErr('Ingresa tu Apollo API Key en la configuración ⬆️'); return; }
+  const emp = document.getElementById('emp-inp').value.trim();
+  if (!emp) { toast('Ingresa el nombre de la empresa','err'); return; }
+  const dom = document.getElementById('dom-inp').value.trim();
+
+  document.getElementById('apollo-err').style.display='none';
+  document.getElementById('apollo-results').innerHTML='';
+  document.getElementById('apollo-sel-summary').style.display='none';
+  document.getElementById('apollo-loading').style.display='block';
+  document.getElementById('apollo-btn').disabled=true;
+
+  try {
+    const body = { api_key:key, q_organization_name:emp, page:1, per_page:10 };
+    if (dom) body.q_organization_domains=[dom];
+    const proxyBase = (S.apolloProxy || '/proxy/apollo').replace(/\/$/, '');
+    const apolloUrl = proxyBase + '/v1/mixed_people/search';
+    const res = await fetch(apolloUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},
+      body:JSON.stringify(body)
+    });
+    if (res.status===401||res.status===403) throw new Error('API Key de Apollo inválida o sin permisos');
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    const data = await res.json();
+    const people = data.people||[];
+    if (!people.length) showApolloErr('No se encontraron contactos. Prueba con otro nombre de empresa.');
+    else renderApolloResults(people, emp);
+  } catch(e) {
+    const msg = e.message||'';
+    const isCors = msg.includes('fetch')||msg.includes('NetworkError')||msg.includes('Failed to fetch');
+    document.getElementById('apollo-err').innerHTML = isCors
+      ? `⚠️ <strong>Error de conexión con el proxy</strong>.<br>El servidor proxy no está activo. Inícialo con:<br>
+         <code style="background:var(--g2);padding:2px 6px;border-radius:4px;font-size:11px">python proxy_server.py</code>`
+      : esc(msg);
+    document.getElementById('apollo-err').style.display='block';
+  } finally {
+    document.getElementById('apollo-loading').style.display='none';
+    document.getElementById('apollo-btn').disabled=false;
+  }
+}
+
+function showApolloErr(msg) {
+  const el = document.getElementById('apollo-err');
+  el.textContent = msg; el.style.display='block';
+}
+
+function renderApolloResults(people, orgName) {
+  const el = document.getElementById('apollo-results');
+  const sumEl = document.getElementById('apollo-sel-summary');
+  sumEl.style.display='block';
+  sumEl.textContent = people.length+' contactos encontrados para '+orgName;
+
+  people.forEach((p,i) => {
+    const name = (p.name||`${p.first_name||''} ${p.last_name||''}`.trim()||'Sin nombre');
+    const rawPhone = (p.phone_numbers?.[0]?.sanitized_number||p.phone_numbers?.[0]?.raw_number||'').replace(/\D/g,'');
+    const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
+    const waMsg = encodeURIComponent(`Hola ${p.first_name||name.split(' ')[0]}, soy Cecilia de Mercado Pago. Me gustaría presentarles la Smart Point 2 para su negocio. ¿Tienen un momento esta semana? 💛`);
+    const loc = [p.city,p.state,p.country].filter(Boolean).join(', ');
+    const id = 'apo_'+i+'_'+(p.id||i);
+    const alreadySaved = S.prospects.some(x => x.id === id);
+    const phone = p.phone_numbers?.[0]?.raw_number || '';
+
+    // Register for bulk
+    p._id = id; p._name = name; p._phone = waNum;
+    searchResults.push(p);
+
+    el.innerHTML += `<div class="rc" id="src-${id}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div class="sel-chk" id="chk-${id}" onclick="toggleSearchSel('${id}')"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            ${p.photo_url?`<img src="${p.photo_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div class="aav">${name.charAt(0).toUpperCase()}</div>`}
+            <div style="min-width:0">
+              <div style="font-size:13px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div>
+              ${p.title?`<div style="font-size:11px;color:var(--g5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.title)}</div>`:''}
+              ${p.organization_name?`<div style="font-size:11px;color:var(--b);font-weight:700">${esc(p.organization_name)}</div>`:''}
+            </div>
+          </div>
+          ${loc?`<div class="det">📍 ${esc(loc)}</div>`:''}
+          ${p.email?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${p.email}').then(()=>toast('📋 Email copiado'))">📧 ${esc(p.email)}</div>`:''}
+          ${phone?`<div class="det" style="cursor:pointer" onclick="navigator.clipboard.writeText('${esc(phone)}').then(()=>toast('📋 Copiado'))">📞 ${esc(phone)}</div>`:''}
+          ${p.seniority?`<div class="det">👤 ${esc(p.seniority)}</div>`:''}
+          <div class="acts">
+            ${waNum?`<a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" class="ract wa">💬 WA</a>`:''}
+            ${phone?`<a href="tel:${phone}" class="ract call">📞 Llamar</a>`:''}
+            ${p.linkedin_url?`<a href="${p.linkedin_url}" target="_blank" class="ract li">💼 LinkedIn</a>`:''}
+            <button class="ract save ${alreadySaved?'saved':''}" id="savebtn-${id}" onclick="saveApolloProspect('${id}',${i})">
+              ${alreadySaved?'⭐ Guardado':'☆ Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+}
+
+function saveApolloProspect(id, idx) {
+  const p = searchResults.find(x => x._id === id);
+  if (!p) return;
+  const rawPhone = (p.phone_numbers?.[0]?.sanitized_number||p.phone_numbers?.[0]?.raw_number||'').replace(/\D/g,'');
+  const waNum = rawPhone ? (rawPhone.startsWith('56')?rawPhone:'56'+rawPhone) : '';
+  saveProspect({
+    id, name: p.name || `${p.first_name||''} ${p.last_name||''}`.trim() || 'Sin nombre',
+    phone: waNum || rawPhone,
+    category: p.title || p.seniority || 'Contacto',
+    address: [p.city,p.country].filter(Boolean).join(', '),
+    source: 'apollo'
+  });
+  const btn = document.getElementById('savebtn-'+id);
+  if (btn) { btn.className='ract saved'; btn.textContent='⭐ Guardado'; }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+</script>
+</body>
+</html>
