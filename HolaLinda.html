@@ -191,14 +191,32 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 .plist-empty{text-align:center;padding:32px 16px;color:var(--g4)}
 .plist-empty .pe{font-size:40px;margin-bottom:8px}
 .plist-empty p{font-size:12px;line-height:1.7}
-.pc{background:var(--w);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:10px;border:1.5px solid transparent;transition:border-color .15s}
+.pc{background:var(--w);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:flex-start;gap:10px;border:1.5px solid transparent;transition:border-color .15s}
 .pc.on{border-color:var(--b);background:#f0f9ff}
-.pc .pci{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.pc .pci{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px}
 .pc .pcm{flex:1;min-width:0}
 .pc .pcn{font-size:12px;font-weight:800;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc .pcs{font-size:10px;color:var(--g4);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc .pcck{width:22px;height:22px;border-radius:6px;border:2px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;flex-shrink:0;cursor:pointer}
+.pc .pcck{width:22px;height:22px;border-radius:6px;border:2px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;flex-shrink:0;cursor:pointer;margin-top:2px}
 .pc .pcck.on{background:var(--b);border-color:var(--b);color:#fff}
+/* Estado CRM */
+.est-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;margin-top:5px;border:1.5px solid transparent}
+.est-chip:active{transform:scale(.92)}
+.est-nuevo{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.est-contactado{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+.est-interesado{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.est-venta{background:#fefce8;color:#854d0e;border-color:#fef08a}
+.est-descartado{background:#fef2f2;color:#991b1b;border-color:#fecaca;opacity:.65}
+.nota-inp{width:100%;padding:5px 8px;border:1.5px solid var(--g2);border-radius:8px;font-size:11px;font-family:inherit;outline:none;margin-top:5px;color:var(--dk)}
+.nota-inp:focus{border-color:var(--b)}
+/* Pipeline */
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.pip-item{background:var(--w);border-radius:10px;padding:8px 4px;text-align:center;border:1.5px solid var(--g2);cursor:pointer;transition:all .15s}
+.pip-item.on{border-color:currentColor}
+.pip-item .pn{font-size:18px;font-weight:900;color:var(--dk)}
+.pip-item .pl{font-size:9px;font-weight:700;margin-top:1px}
+/* Filtro estado */
+.ef-bar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
 .camp-prog{background:var(--g1);border-radius:12px;padding:14px;margin-top:12px}
 .camp-prog .cp-lbl{font-size:11px;font-weight:700;color:var(--g5);margin-bottom:8px}
 .camp-msg{width:100%;padding:10px 12px;border:2px solid var(--g2);border-radius:10px;font-size:12px;font-family:inherit;resize:none;outline:none;line-height:1.5}
@@ -371,28 +389,51 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 
     <!-- ══ DIFUSIÓN ══ -->
     <div id="s-difusion" class="scr">
-      <div class="hdr-gr"><div class="hdr-h1" style="color:var(--w)">📤 Difusión Masiva</div><div class="hdr-sub" style="color:rgba(255,255,255,.75)">Prospectos guardados · Campaña WhatsApp</div></div>
+      <div class="hdr-gr"><div class="hdr-h1" style="color:var(--w)">📤 Pipeline de Ventas</div><div class="hdr-sub" style="color:rgba(255,255,255,.75)">Prospectos · Estado · Difusión WhatsApp</div></div>
       <div class="sc">
+
+        <!-- Pipeline visual -->
+        <div class="sl">📊 Embudo de ventas</div>
+        <div class="pipeline" id="pipeline-bar">
+          <div class="pip-item" id="pip-nuevo"       style="color:#1d4ed8" onclick="setEstFilter('nuevo')"><div class="pn" id="pcnt-nuevo">0</div><div class="pl" style="color:#1d4ed8">🔵 Nuevo</div></div>
+          <div class="pip-item" id="pip-contactado"  style="color:#166534" onclick="setEstFilter('contactado')"><div class="pn" id="pcnt-contactado">0</div><div class="pl" style="color:#166534">📞 Cont.</div></div>
+          <div class="pip-item" id="pip-interesado"  style="color:#c2410c" onclick="setEstFilter('interesado')"><div class="pn" id="pcnt-interesado">0</div><div class="pl" style="color:#c2410c">🔥 Inter.</div></div>
+          <div class="pip-item" id="pip-venta"       style="color:#854d0e" onclick="setEstFilter('venta')"><div class="pn" id="pcnt-venta">0</div><div class="pl" style="color:#854d0e">💳 Venta</div></div>
+          <div class="pip-item" id="pip-descartado"  style="color:#991b1b" onclick="setEstFilter('descartado')"><div class="pn" id="pcnt-descartado">0</div><div class="pl" style="color:#991b1b">❌ Desc.</div></div>
+        </div>
+
+        <!-- Filtro estado -->
+        <div class="ef-bar" id="ef-bar">
+          <button class="ftag on" id="ef-all"         onclick="setEstFilter('all')">Todos</button>
+          <button class="ftag"    id="ef-nuevo"        onclick="setEstFilter('nuevo')">🔵 Nuevos</button>
+          <button class="ftag"    id="ef-contactado"   onclick="setEstFilter('contactado')">📞 Contactados</button>
+          <button class="ftag"    id="ef-interesado"   onclick="setEstFilter('interesado')">🔥 Interesados</button>
+          <button class="ftag"    id="ef-venta"        onclick="setEstFilter('venta')">💳 Ventas</button>
+        </div>
+
         <!-- Mensaje de campaña -->
         <div class="card" style="margin-bottom:14px">
           <div class="ct">✏️ Mensaje de Campaña</div>
-          <textarea id="camp-msg" class="camp-msg" rows="4" placeholder="Ej: Hola [nombre], soy Cecilia de Mercado Pago. Me gustaría presentarles la Smart Point 2: cobro sin arriendo ni mensualidad. ¿Tienen un momento? 💛">Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobro con tarjeta sin arriendo ni mensualidad, por solo $59.900 único. ¿Tienen 5 minutos esta semana? 💛</textarea>
-          <div style="font-size:10px;color:var(--g4);margin-top:6px">Usa <strong>[nombre]</strong> para personalizar automáticamente</div>
+          <textarea id="camp-msg" class="camp-msg" rows="4">Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobro con tarjeta sin arriendo ni mensualidad, por solo $59.900 único. ¿Tienen 5 minutos esta semana? 💛</textarea>
+          <div style="font-size:10px;color:var(--g4);margin-top:6px">Usa <strong>[nombre]</strong> para personalizar · <strong>[nota]</strong> para incluir tu nota</div>
         </div>
+
         <!-- Acciones -->
         <div style="display:flex;gap:8px;margin-bottom:14px">
-          <button onclick="selectAllProspects()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);flex:1">☑️ Seleccionar todo</button>
+          <button onclick="selectAllProspects()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);flex:1">☑️ Sel. todo</button>
           <button onclick="clearProspectSelection()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);flex:1">✖️ Limpiar</button>
           <button onclick="clearAllProspects()" class="btn btn-sm" style="background:#fee2e2;color:var(--red);flex:1">🗑️ Vaciar</button>
         </div>
+
         <!-- Contador seleccionados -->
-        <div id="camp-sel-bar" style="background:var(--dk);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        <div id="camp-sel-bar" style="background:var(--dk);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:none;align-items:center;justify-content:space-between">
           <div style="font-size:12px;font-weight:700"><span id="camp-sel-cnt">0</span> seleccionados</div>
           <button onclick="launchCampaign()" style="background:var(--g);color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:800;border:none;cursor:pointer">💬 Enviar WA</button>
         </div>
+
         <!-- Lista prospectos -->
         <div class="sl" style="display:flex;align-items:center;justify-content:space-between">
-          <span>👤 Prospectos Guardados</span>
+          <span>👤 Prospectos <span id="prosp-filter-lbl" style="color:var(--g4);font-weight:600;font-size:11px"></span></span>
           <span id="prosp-total" style="font-size:11px;color:var(--g4);font-weight:700">0</span>
         </div>
         <div id="prosp-list"></div>
@@ -1543,6 +1584,8 @@ function saveProspect(p) {
   // p: { id, name, phone, type, address, category, source }
   const exists = S.prospects.some(x => x.id === p.id);
   if (exists) { toast('Ya está guardado','err'); return; }
+  p.estado = p.estado || 'nuevo';
+  p.nota   = p.nota   || '';
   S.prospects.push(p);
   save(S); syncPush();
   updateProspectBadge();
@@ -1589,21 +1632,39 @@ function updateProspectBadge() {
 function renderProspectList() {
   const el = document.getElementById('prosp-list');
   if (!el) return;
-  if (S.prospects.length === 0) {
-    el.innerHTML = `<div class="plist-empty"><div class="pe">📭</div><p>Sin prospectos guardados aún.<br>Busca negocios en <strong>Buscar</strong> y toca<br>⭐ Guardar en cada resultado.</p></div>`;
+  updatePipeline();
+  const filtered = estFilter === 'all'
+    ? S.prospects
+    : S.prospects.filter(p => (p.estado || 'nuevo') === estFilter);
+  // Update filter label
+  const lbl = document.getElementById('prosp-filter-lbl');
+  if (lbl) lbl.textContent = estFilter !== 'all' ? '· ' + (ESTADOS[estFilter]?.label || estFilter) : '';
+  const tot = document.getElementById('prosp-total');
+  if (tot) tot.textContent = S.prospects.length;
+  if (filtered.length === 0) {
+    el.innerHTML = S.prospects.length === 0
+      ? `<div class="plist-empty"><div class="pe">📭</div><p>Sin prospectos guardados aún.<br>Busca negocios en <strong>Buscar</strong> y toca<br>⭐ Guardar en cada resultado.</p></div>`
+      : `<div class="plist-empty"><div class="pe">🔍</div><p>Sin prospectos en este estado.<br>Toca <strong>Todos</strong> para ver la lista completa.</p></div>`;
     updateSelCampBar(); return;
   }
-  el.innerHTML = S.prospects.map(p => {
+  el.innerHTML = filtered.map(p => {
     const on = prospectSel.has(p.id);
+    const est = p.estado || 'nuevo';
     const typeIcon = p.source==='apollo' ? '🚀' : '🗺️';
     const phone = (p.phone||'').replace(/\D/g,'');
     const waNum = phone ? (phone.startsWith('56')?phone:'56'+phone) : '';
+    const ed = ESTADOS[est] || ESTADOS.nuevo;
     return `<div class="pc ${on?'on':''}" id="pcard-${p.id}">
       <div class="pci" style="background:${on?'var(--b)':'var(--g1)'};">${typeIcon}</div>
       <div class="pcm">
         <div class="pcn">${esc(p.name)}</div>
         <div class="pcs">${esc([p.category,p.address||p.location].filter(Boolean).join(' · '))}</div>
         ${phone?`<div class="pcs" style="color:var(--g)">📞 ${esc(p.phone)}</div>`:''}
+        <span class="est-chip ${ed.cls}" onclick="cycleEstado('${p.id}')">${ed.emoji} ${ed.label} ▸</span>
+        <input class="nota-inp" type="text" placeholder="Nota rápida..." maxlength="120"
+          value="${esc(p.nota||'')}"
+          onblur="saveNota('${p.id}',this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}">
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
         ${waNum?`<a href="https://wa.me/${waNum}" target="_blank" style="background:var(--g);color:#fff;padding:5px 8px;border-radius:8px;font-size:10px;font-weight:700;text-align:center">💬</a>`:''}
@@ -1659,7 +1720,10 @@ function launchBulkWA(list, template, idx) {
   const phone = (p.phone||'').replace(/\D/g,'');
   const waNum = phone.startsWith('56') ? phone : '56'+phone;
   const firstName = p.name.split(' ')[0] || p.name;
-  const msg = template.replace(/\[nombre\]/gi, firstName);
+  const nota = (p.nota||'').trim();
+  const msg = template
+    .replace(/\[nombre\]/gi, firstName)
+    .replace(/\[nota\]/gi, nota);
   // Track
   S.dms = (S.dms||0) + 1; save(S);
   window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg), '_blank');
@@ -1673,6 +1737,71 @@ function launchBulkWA(list, template, idx) {
   }
 }
 
+
+// ── CRM PIPELINE ──────────────────────────────────────────────────────────────
+const ESTADOS = {
+  nuevo:      { emoji:'🔵', label:'Nuevo',      cls:'est-nuevo' },
+  contactado: { emoji:'📞', label:'Contactado',  cls:'est-contactado' },
+  interesado: { emoji:'🔥', label:'Interesado',  cls:'est-interesado' },
+  venta:      { emoji:'💳', label:'Venta',        cls:'est-venta' },
+  descartado: { emoji:'❌', label:'Descartado',  cls:'est-descartado' },
+};
+const ESTADOS_CYCLE = ['nuevo','contactado','interesado','venta','descartado'];
+
+let estFilter = 'all';
+
+function setEstFilter(f) {
+  estFilter = f;
+  // Highlight active filter button
+  ['all','nuevo','contactado','interesado','venta'].forEach(k => {
+    const btn = document.getElementById('ef-'+k);
+    if (btn) btn.classList.toggle('on', k === f);
+  });
+  // Highlight active pipeline column
+  ESTADOS_CYCLE.forEach(k => {
+    const pip = document.getElementById('pip-'+k);
+    if (pip) pip.style.borderColor = k === f ? 'var(--b)' : 'var(--g2)';
+  });
+  renderProspectList();
+}
+
+function cycleEstado(id) {
+  const p = S.prospects.find(x => x.id === id);
+  if (!p) return;
+  const cur = p.estado || 'nuevo';
+  const idx = ESTADOS_CYCLE.indexOf(cur);
+  p.estado = ESTADOS_CYCLE[(idx + 1) % ESTADOS_CYCLE.length];
+  save(S); debouncedSyncPush();
+  renderProspectList();
+  const firstName = (p.name||'').split(' ')[0] || p.name;
+  toast(ESTADOS[p.estado].emoji + ' ' + firstName + ' → ' + ESTADOS[p.estado].label);
+}
+
+function saveNota(id, val) {
+  const p = S.prospects.find(x => x.id === id);
+  if (!p) return;
+  const trimmed = (val||'').trim();
+  if (p.nota === trimmed) return; // no change
+  p.nota = trimmed;
+  save(S); debouncedSyncPush();
+}
+
+function updatePipeline() {
+  const counts = { nuevo:0, contactado:0, interesado:0, venta:0, descartado:0 };
+  (S.prospects||[]).forEach(p => {
+    const e = p.estado || 'nuevo';
+    if (counts[e] !== undefined) counts[e]++;
+  });
+  ESTADOS_CYCLE.forEach(k => {
+    const cnt = document.getElementById('pcnt-'+k);
+    if (cnt) cnt.textContent = counts[k];
+    const pip = document.getElementById('pip-'+k);
+    if (pip) {
+      pip.style.background = counts[k] > 0 ? 'var(--w)' : 'var(--g1)';
+      pip.style.opacity    = counts[k] > 0 ? '1' : '.5';
+    }
+  });
+}
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -1732,9 +1861,26 @@ async function syncPull() {
 
 function mergeRemoteData(remote) {
   let changed = false;
-  // ── Prospects: union by id (nunca se pierden datos) ──
-  const localIds = new Set((S.prospects||[]).map(p=>p.id));
-  const newFromRemote = (remote.prospects||[]).filter(p=>p.id && !localIds.has(p.id));
+  // ── Prospects: union by id + sync estado/nota ──
+  const localMap = new Map((S.prospects||[]).map(p=>[p.id,p]));
+  const newFromRemote = [];
+  (remote.prospects||[]).forEach(rp => {
+    if (!rp.id) return;
+    if (!localMap.has(rp.id)) {
+      // New prospect from remote — ensure defaults
+      rp.estado = rp.estado || 'nuevo';
+      rp.nota   = rp.nota   || '';
+      newFromRemote.push(rp);
+    } else {
+      // Existing — sync estado if remote is more advanced in pipeline
+      const lp = localMap.get(rp.id);
+      const ri = ESTADOS_CYCLE.indexOf(rp.estado||'nuevo');
+      const li = ESTADOS_CYCLE.indexOf(lp.estado||'nuevo');
+      if (ri > li) { lp.estado = rp.estado; changed = true; }
+      // Sync nota: remote wins only if local is empty
+      if (!lp.nota && rp.nota) { lp.nota = rp.nota; changed = true; }
+    }
+  });
   if (newFromRemote.length) {
     S.prospects = [...(S.prospects||[]), ...newFromRemote];
     changed = true;
