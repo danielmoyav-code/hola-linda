@@ -249,6 +249,9 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 .src-toggle:active{transform:scale(.93)}
 .ftag{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
 .ftag.on{background:var(--dk);color:var(--w);border-color:var(--dk)}
+.tpl-btn{padding:7px 12px;border-radius:10px;font-size:11px;font-weight:800;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s}
+.tpl-btn.on{background:var(--dk);color:var(--y);border-color:var(--dk);box-shadow:0 2px 8px rgba(26,26,46,.25)}
+.tpl-btn:active{transform:scale(.96)}
 .fbadge{background:rgba(255,255,255,.18);border-radius:10px;padding:0 5px;font-size:9px;line-height:1.5}
 .ftag:not(.on) .fbadge{background:var(--g2);color:var(--g5)}
 .src-badge{font-size:9px;padding:2px 7px;border-radius:8px;white-space:nowrap;font-weight:700;flex-shrink:0}
@@ -429,19 +432,33 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
         <!-- Mensaje de campaña -->
         <div class="card" style="margin-bottom:14px">
           <div class="ct">✏️ Mensajes de Campaña</div>
+          <!-- Selector de template -->
+          <div style="font-size:10px;font-weight:800;color:var(--g5);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Plantillas rápidas</div>
+          <div class="tpl-bar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            <button class="tpl-btn on" id="tpl-cold"     onclick="applyTemplate('cold')">❄️ Frío</button>
+            <button class="tpl-btn"    id="tpl-followup" onclick="applyTemplate('followup')">📞 Seguimiento</button>
+            <button class="tpl-btn"    id="tpl-close"    onclick="applyTemplate('close')">🔥 Cierre</button>
+          </div>
           <!-- WhatsApp -->
           <div style="font-size:10px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">💬 WhatsApp</div>
-          <textarea id="camp-msg" class="camp-msg" rows="3">Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobro con tarjeta sin arriendo ni mensualidad, por solo $59.900 único. ¿Tienen 5 minutos esta semana? 💛</textarea>
+          <textarea id="camp-msg" class="camp-msg" rows="3">Hola [nombre] 👋, te escribe Cecilia de Mercado Pago Chile. Vi tu local y se me ocurrió que te puede interesar la Smart Point 2 para cobrar con tarjeta — sin arriendo ni mensualidad. ¿Te cuento por audio en 30 segundos? 💛</textarea>
           <!-- Email -->
           <div style="font-size:10px;font-weight:800;color:var(--b);text-transform:uppercase;letter-spacing:.4px;margin:10px 0 4px">📧 Email</div>
-          <input id="camp-email-subj" class="inp" style="margin-bottom:6px;font-size:12px" placeholder="Asunto: Cobro con tarjeta sin mensualidad — Mercado Pago" value="Cobro con tarjeta sin mensualidad — Mercado Pago Chile">
-          <textarea id="camp-email-body" class="camp-msg" rows="3">Hola [nombre],
+          <input id="camp-email-subj" class="inp" style="margin-bottom:6px;font-size:12px" placeholder="Asunto del email" value="[nombre], cobra con tarjeta sin mensualidad — abono al toque 💳">
+          <textarea id="camp-email-body" class="camp-msg" rows="6">Hola [nombre],
 
-Soy Cecilia, ejecutiva de Mercado Pago Chile. La Smart Point 2 te permite cobrar con tarjeta sin arriendo ni mensualidad, por solo $59.900 pago único.
+Te escribo desde Mercado Pago Chile. [nota]
 
-¿Tienes 5 minutos esta semana? Con gusto te cuento más.
+Lo importante de la Smart Point 2:
+✅ $59.900 pago único — sin arriendo ni mensualidad
+✅ 2,19% comisión en débito (la más baja del mercado)
+✅ La plata se abona al instante, no esperás días
+✅ Acepta tarjetas, transferencias y QR
 
-Saludos, Cecilia 💛</textarea>
+¿Cuándo te queda bien una llamada de 5 minutos?
+
+Cecilia 💛
+Ejecutiva Smart Point 2 · Mercado Pago Chile</textarea>
           <div style="font-size:10px;color:var(--g4);margin-top:6px">Usa <strong>[nombre]</strong> y <strong>[nota]</strong> en ambos templates</div>
         </div>
 
@@ -815,6 +832,10 @@ function initApp() {
   updateCfgStatus();
   renderProspectList();
   updateProspectBadge();
+  // Restaurar última plantilla usada
+  if (S.lastTpl && MSG_TEMPLATES[S.lastTpl]) {
+    setTimeout(() => applyTemplate(S.lastTpl), 100);
+  }
   const n = parseInt(sessionStorage.getItem('hl_tab')||'0');
   goTab(n);
 }
@@ -1829,6 +1850,46 @@ function showMotiv() {
 function nextMotiv() {
   motivIdx = (motivIdx + 1) % MOTIV_MSGS.length;
   showMotiv();
+}
+
+// ── PLANTILLAS DE MENSAJE ─────────────────────────────────────────────────────
+const MSG_TEMPLATES = {
+  cold: {
+    label: '❄️ Frío',
+    wa: 'Hola [nombre] 👋, te escribe Cecilia de Mercado Pago Chile. Vi tu local y se me ocurrió que te puede interesar la Smart Point 2 para cobrar con tarjeta — sin arriendo ni mensualidad. ¿Te cuento por audio en 30 segundos? 💛',
+    subj: '[nombre], cobra con tarjeta sin mensualidad — abono al toque 💳',
+    body: 'Hola [nombre],\n\nTe escribo desde Mercado Pago Chile. [nota]\n\nLo importante de la Smart Point 2:\n✅ $59.900 pago único — sin arriendo ni mensualidad\n✅ 2,19% comisión en débito (la más baja del mercado)\n✅ La plata se abona al instante, no esperás días\n✅ Acepta tarjetas, transferencias y QR\n\n¿Cuándo te queda bien una llamada de 5 minutos?\n\nCecilia 💛\nEjecutiva Smart Point 2 · Mercado Pago Chile'
+  },
+  followup: {
+    label: '📞 Seguimiento',
+    wa: 'Hola [nombre] 👋, te escribo de Mercado Pago. Pasé el otro día por tu local — [nota]. ¿Avanzamos con la Smart Point 2 esta semana? Te coordino lo que necesites 💳💛',
+    subj: 'Continuamos lo que conversamos — Smart Point 2 para [nombre]',
+    body: 'Hola [nombre],\n\nQuería retomar lo que hablamos. [nota]\n\nLa Smart Point 2 sigue disponible:\n✅ $59.900 pago único — sin contratos ni mensualidad\n✅ 2,19% comisión débito + abono al instante\n✅ Te apoyo con la activación y la primera venta\n\n¿Te dejo coordinada una visita esta semana?\n\nCecilia 💛\nMercado Pago Chile'
+  },
+  close: {
+    label: '🔥 Cierre',
+    wa: '[nombre] 🎯 ¿Avanzamos con la Smart Point 2? Te coordino la entrega y te activo la cuenta hoy mismo. Solo necesito tus datos básicos. 💛',
+    subj: '[nombre] — concretemos: Smart Point 2 + activación express 🚀',
+    body: 'Hola [nombre],\n\nPara cerrar la Smart Point 2 solo necesito:\n1️⃣ RUT del responsable\n2️⃣ Dirección de envío\n3️⃣ Cuenta bancaria para los abonos\n\nResumen final:\n✅ Smart Point 2 — $59.900 pago único\n✅ 2,19% comisión débito · 3,49% crédito\n✅ Sin mensualidad · Sin contratos · Sin sorpresas\n✅ Yo te activo la máquina y te enseño a usarla\n\n¿Lo dejamos hoy listo?\n\nCecilia 💛\nMercado Pago Chile'
+  }
+};
+
+function applyTemplate(key) {
+  const t = MSG_TEMPLATES[key]; if (!t) return;
+  const wa = document.getElementById('camp-msg');
+  const subj = document.getElementById('camp-email-subj');
+  const body = document.getElementById('camp-email-body');
+  if (wa)   wa.value   = t.wa;
+  if (subj) subj.value = t.subj;
+  if (body) body.value = t.body;
+  // Highlight active button
+  ['cold','followup','close'].forEach(k => {
+    const b = document.getElementById('tpl-'+k);
+    if (b) b.classList.toggle('on', k === key);
+  });
+  // Save preference
+  S.lastTpl = key; save(S);
+  toast(t.label + ' — plantilla cargada');
 }
 
 // ── EMAIL CAMPAIGN ────────────────────────────────────────────────────────────
