@@ -471,6 +471,7 @@ Ejecutiva Smart Point 2 · Mercado Pago Chile</textarea>
 
         <!-- Barra seleccionados -->
         <div id="camp-sel-bar" style="background:var(--dk);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:none;flex-direction:column;gap:8px">
+          <button id="camp-resume-btn" onclick="resumeCampaign()" style="background:var(--y);color:var(--dk);padding:9px 0;border-radius:10px;font-size:12px;font-weight:800;border:none;cursor:pointer;display:none;width:100%"></button>
           <div style="display:flex;align-items:center;justify-content:space-between">
             <div style="font-size:12px;font-weight:700"><span id="camp-sel-cnt">0</span> seleccionados · <span id="camp-email-cnt" style="color:#93c5fd;font-size:11px">0 con email</span></div>
           </div>
@@ -683,6 +684,32 @@ Ejecutiva Smart Point 2 · Mercado Pago Chile</textarea>
   </div>
 </div>
 
+<!-- CAMPAÑA WA / EMAIL MODAL -->
+<div class="modal" id="camp-modal">
+  <div class="mbox" style="max-width:380px;padding:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <h3 id="camp-title" style="margin:0;font-size:17px">📤 Campaña</h3>
+      <button onclick="campCancel()" style="background:none;border:none;font-size:22px;color:var(--g4);cursor:pointer;line-height:1">×</button>
+    </div>
+    <div id="camp-progress" style="font-size:11px;font-weight:700;color:var(--g5);margin-bottom:10px"></div>
+    <div class="pbar" style="margin-bottom:14px"><div id="camp-pbar" class="pfill" style="width:0%;background:var(--g)"></div></div>
+    <!-- Current prospect -->
+    <div id="camp-curcard" style="background:var(--g1);border-radius:12px;padding:12px;margin-bottom:12px">
+      <div id="camp-curname" style="font-size:14px;font-weight:800;color:var(--dk);margin-bottom:2px"></div>
+      <div id="camp-curphone" style="font-size:11px;color:var(--g);font-weight:700;margin-bottom:8px"></div>
+      <div id="camp-curmsg" style="font-size:11px;color:var(--g5);line-height:1.45;background:var(--w);padding:9px 11px;border-radius:8px;max-height:120px;overflow-y:auto;white-space:pre-wrap"></div>
+    </div>
+    <!-- Action buttons -->
+    <button id="camp-send-btn" onclick="campSend()" class="btn" style="background:var(--g);color:#fff;margin-bottom:8px"><span id="camp-send-label">💬 Enviar a </span><span id="camp-send-name">…</span></button>
+    <div style="display:flex;gap:8px">
+      <button onclick="campSkip()" class="btn btn-sm" style="background:var(--g1);color:var(--dk);border:1.5px solid var(--g2);flex:1;width:auto">⏭ Saltar</button>
+      <button onclick="campMarkSent()" class="btn btn-sm" style="background:#fef9c3;color:#854d0e;border:1.5px solid #fde68a;flex:1;width:auto">✓ Ya envié</button>
+      <button onclick="campCancel()" class="btn btn-sm" style="background:#fee2e2;color:var(--red);border:1.5px solid #fecaca;flex:1;width:auto">⏸ Pausar</button>
+    </div>
+    <div style="font-size:10px;color:var(--g4);text-align:center;margin-top:10px">Si pausás, podés retomar desde donde quedaste 💛</div>
+  </div>
+</div>
+
 <!-- VISITA MODAL -->
 <div class="modal" id="visita-modal">
   <div class="mbox">
@@ -835,6 +862,18 @@ function initApp() {
   // Restaurar última plantilla usada
   if (S.lastTpl && MSG_TEMPLATES[S.lastTpl]) {
     setTimeout(() => applyTemplate(S.lastTpl), 100);
+  }
+  // Detectar campaña pausada y avisar
+  const pausedCamp = localStorage.getItem('hl_camp');
+  if (pausedCamp) {
+    try {
+      const cs = JSON.parse(pausedCamp);
+      if (cs.queue?.length) {
+        setTimeout(() => toast('▶ Tienes una campaña pausada: '+cs.queue.length+' pendientes (Difusión)'), 1500);
+      } else {
+        localStorage.removeItem('hl_camp');
+      }
+    } catch { localStorage.removeItem('hl_camp'); }
   }
   const n = parseInt(sessionStorage.getItem('hl_tab')||'0');
   goTab(n);
@@ -1770,7 +1809,9 @@ function updateSelCampBar() {
   const n = prospectSel.size;
   const bar = document.getElementById('camp-sel-bar');
   if (bar) {
-    bar.style.display = n > 0 ? 'flex' : 'none';
+    // Mostrar la barra si hay seleccionados o hay campaña pausada
+    const hasPausedCamp = !!localStorage.getItem('hl_camp');
+    bar.style.display = (n > 0 || hasPausedCamp) ? 'flex' : 'none';
     const cnt = document.getElementById('camp-sel-cnt');
     if (cnt) cnt.textContent = n;
     const emailCnt = document.getElementById('camp-email-cnt');
@@ -1778,43 +1819,160 @@ function updateSelCampBar() {
       const withEmail = S.prospects.filter(p => prospectSel.has(p.id) && p.email).length;
       emailCnt.textContent = withEmail + ' con email';
     }
+    // Indicador campaña pausada
+    const resumeBtn = document.getElementById('camp-resume-btn');
+    if (resumeBtn) {
+      if (hasPausedCamp) {
+        try {
+          const cs = JSON.parse(localStorage.getItem('hl_camp'));
+          resumeBtn.style.display = 'block';
+          resumeBtn.textContent = '▶ Retomar campaña ('+cs.queue.length+' pendientes)';
+        } catch { resumeBtn.style.display = 'none'; }
+      } else {
+        resumeBtn.style.display = 'none';
+      }
+    }
   }
 }
+
+// ── CAMPAÑA WHATSAPP — flujo secuencial controlado ────────────────────────────
+// Profesional: el usuario controla el ritmo. Funciona sin WhatsApp Business.
+// Persiste estado en localStorage → si Cecilia pausa o cierra la app, retoma.
+let campState = null;
 
 function launchCampaign() {
   const selected = S.prospects.filter(p => prospectSel.has(p.id));
-  if (!selected.length) { toast('Selecciona al menos 1 prospecto','err'); return; }
-  const msgTemplate = document.getElementById('camp-msg').value.trim() ||
-    'Hola [nombre], soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2. ¿Tienen un momento? 💛';
+  if (!selected.length) { toast('Seleccioná al menos 1 prospecto','err'); return; }
+  const tpl = (document.getElementById('camp-msg')?.value || '').trim();
+  if (!tpl) { toast('Escribí el mensaje primero','err'); return; }
   const withPhone = selected.filter(p => (p.phone||'').replace(/\D/g,'').length >= 8);
-  if (!withPhone.length) {
-    toast('Ningún prospecto seleccionado tiene teléfono','err'); return;
-  }
-  if (!confirm(`Se abrirá WhatsApp para ${withPhone.length} contacto${withPhone.length>1?'s':''} (uno por uno). ¿Continuar?`)) return;
-  launchBulkWA(withPhone, msgTemplate, 0);
+  if (!withPhone.length) { toast('Ningún seleccionado tiene teléfono válido','err'); return; }
+  // Inicializa estado de campaña
+  campState = {
+    queue:    withPhone.map(p => p.id),
+    sent:     [],
+    skipped:  [],
+    template: tpl,
+    startedAt: Date.now(),
+    type:     'wa'
+  };
+  saveCampState();
+  campRender();
+  document.getElementById('camp-modal').classList.add('o');
 }
 
-function launchBulkWA(list, template, idx) {
-  if (idx >= list.length) { toast('🎉 Campaña completada: '+list.length+' mensajes'); return; }
-  const p = list[idx];
-  const phone = (p.phone||'').replace(/\D/g,'');
-  const waNum = phone.startsWith('56') ? phone : '56'+phone;
-  const firstName = p.name.split(' ')[0] || p.name;
-  const nota = (p.nota||'').trim();
-  const msg = template
-    .replace(/\[nombre\]/gi, firstName)
-    .replace(/\[nota\]/gi, nota);
-  // Track
-  S.dms = (S.dms||0) + 1; save(S);
-  window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg), '_blank');
-  if (idx + 1 < list.length) {
-    setTimeout(() => {
-      toast(`💬 ${idx+1}/${list.length} enviados — próximo: ${list[idx+1].name.split(' ')[0]}`);
-      launchBulkWA(list, template, idx+1);
-    }, 1800);
-  } else {
-    setTimeout(() => { toast('🎉 Campaña completada: '+list.length+' mensajes'); refreshMiniMeta(); }, 800);
+function resumeCampaign() {
+  if (!campState) {
+    const raw = localStorage.getItem('hl_camp');
+    if (raw) try { campState = JSON.parse(raw); } catch {}
   }
+  if (campState && campState.queue && campState.queue.length) {
+    campRender();
+    document.getElementById('camp-modal').classList.add('o');
+    toast('▶ Retomando campaña — '+campState.queue.length+' pendientes');
+  }
+}
+
+function saveCampState() {
+  if (campState) localStorage.setItem('hl_camp', JSON.stringify(campState));
+  else localStorage.removeItem('hl_camp');
+}
+
+function campRender() {
+  if (!campState || !campState.queue.length) { campFinish(); return; }
+  const id = campState.queue[0];
+  const p  = S.prospects.find(x => x.id === id);
+  if (!p) { campState.queue.shift(); saveCampState(); campRender(); return; }
+  const total = campState.queue.length + campState.sent.length + campState.skipped.length;
+  const done  = campState.sent.length + campState.skipped.length;
+  const first = p.name.split(' ')[0] || p.name;
+  const tpl   = campState.template;
+  const isEmail = campState.type === 'email';
+  let url, contactInfo, msg;
+  if (isEmail) {
+    const subj = (campState.subject||'').replace(/\[nombre\]/gi, first).replace(/\[nota\]/gi, p.nota||'');
+    msg = tpl.replace(/\[nombre\]/gi, first).replace(/\[nota\]/gi, p.nota||'');
+    url = 'mailto:'+encodeURIComponent(p.email)+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(msg);
+    contactInfo = '📧 ' + p.email;
+  } else {
+    const phone = (p.phone||'').replace(/\D/g,'');
+    const waNum = phone.startsWith('56') ? phone : '56'+phone;
+    msg = tpl.replace(/\[nombre\]/gi, first).replace(/\[nota\]/gi, p.nota||'');
+    url = 'https://wa.me/'+waNum+'?text='+encodeURIComponent(msg);
+    contactInfo = '📞 +'+waNum;
+  }
+  // Render UI
+  document.getElementById('camp-title').textContent = isEmail ? '📧 Campaña Email' : '💬 Campaña WhatsApp';
+  document.getElementById('camp-progress').innerHTML =
+    `${done} de ${total} <span style="color:var(--g4);font-weight:600">· ${campState.sent.length} enviados · ${campState.skipped.length} saltados · ${campState.queue.length} pendientes</span>`;
+  document.getElementById('camp-pbar').style.width = (total ? (done*100/total) : 0) + '%';
+  document.getElementById('camp-pbar').style.background = isEmail ? 'var(--b)' : 'var(--g)';
+  document.getElementById('camp-curname').textContent  = p.name + (p.category?' · '+p.category:'');
+  document.getElementById('camp-curphone').textContent = contactInfo;
+  document.getElementById('camp-curmsg').textContent   = msg;
+  document.getElementById('camp-send-name').textContent = first;
+  // Set the actual link target on the send button (gesture-driven, no popup blocker)
+  const sendBtn = document.getElementById('camp-send-btn');
+  sendBtn.dataset.url  = url;
+  sendBtn.dataset.id   = id;
+  sendBtn.dataset.first = first;
+  sendBtn.style.background = isEmail ? 'var(--b)' : 'var(--g)';
+  document.getElementById('camp-send-label').textContent = isEmail ? '📧 Enviar a ' : '💬 Enviar a ';
+}
+
+function campSend() {
+  if (!campState || !campState.queue.length) return;
+  const btn = document.getElementById('camp-send-btn');
+  const url = btn.dataset.url;
+  const id  = btn.dataset.id;
+  // Open WhatsApp (gesture-driven click → no popup blocker, no timer pause issues)
+  window.open(url, '_blank');
+  // Mark as sent
+  campState.queue.shift();
+  campState.sent.push(id);
+  S.dms = (S.dms||0) + 1; save(S); debouncedSyncPush();
+  saveCampState();
+  campRender();
+  refreshMiniMeta();
+}
+
+function campSkip() {
+  if (!campState || !campState.queue.length) return;
+  const id = campState.queue.shift();
+  campState.skipped.push(id);
+  saveCampState();
+  campRender();
+}
+
+function campMarkSent() {
+  // Para cuando ya envió manualmente (ej: respondió primero)
+  if (!campState || !campState.queue.length) return;
+  const id = campState.queue.shift();
+  campState.sent.push(id);
+  S.dms = (S.dms||0) + 1; save(S); debouncedSyncPush();
+  saveCampState();
+  campRender();
+  refreshMiniMeta();
+  toast('✓ Marcado como enviado');
+}
+
+function campCancel() {
+  document.getElementById('camp-modal').classList.remove('o');
+  // Mantenemos campState en localStorage para poder retomar
+  if (campState && campState.queue.length) {
+    toast('⏸ Campaña pausada — '+campState.queue.length+' pendientes');
+  }
+}
+
+function campFinish() {
+  document.getElementById('camp-modal').classList.remove('o');
+  if (campState) {
+    const total = campState.sent.length + campState.skipped.length;
+    toast('🎉 Campaña completada — '+campState.sent.length+'/'+total+' enviados');
+  }
+  campState = null;
+  saveCampState();
+  refreshMiniMeta();
 }
 
 
@@ -1892,28 +2050,35 @@ function applyTemplate(key) {
   toast(t.label + ' — plantilla cargada');
 }
 
-// ── EMAIL CAMPAIGN ────────────────────────────────────────────────────────────
+// ── EMAIL CAMPAIGN — flujo secuencial ─────────────────────────────────────────
 function launchEmailCampaign() {
   const selected = S.prospects.filter(p => prospectSel.has(p.id) && p.email);
-  if (!selected.length) { toast('Ningún prospecto seleccionado tiene email','err'); return; }
-  const subj = (document.getElementById('camp-email-subj').value || 'Cobro con tarjeta sin mensualidad — Mercado Pago Chile').trim();
-  const bodyTpl = (document.getElementById('camp-email-body').value || '').trim();
-  if (selected.length === 1) {
-    // Single email — open mailto directly with personalized content
-    const p = selected[0];
-    const firstName = p.name.split(' ')[0] || p.name;
-    const body = bodyTpl.replace(/\[nombre\]/gi, firstName).replace(/\[nota\]/gi, p.nota||'');
-    window.open(`mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`, '_blank');
-    toast('📧 Email abierto para ' + firstName);
+  if (!selected.length) { toast('Ningún seleccionado tiene email','err'); return; }
+  const subj    = (document.getElementById('camp-email-subj')?.value || '').trim();
+  const bodyTpl = (document.getElementById('camp-email-body')?.value  || '').trim();
+  if (!subj || !bodyTpl) { toast('Completa asunto y cuerpo del email','err'); return; }
+  // Si son hasta 5, abrir uno por uno controlado. Si son más, ofrecer BCC.
+  if (selected.length <= 5) {
+    campState = {
+      queue:    selected.map(p => p.id),
+      sent:     [],
+      skipped:  [],
+      template: bodyTpl,
+      subject:  subj,
+      type:     'email',
+      startedAt: Date.now(),
+    };
+    saveCampState();
+    campRender();
+    document.getElementById('camp-modal').classList.add('o');
   } else {
-    // Multiple — open BCC email with all addresses
+    // Email masivo: BCC con un solo click (sin personalización individual)
     const bcc = selected.map(p => p.email).join(',');
-    const firstName = 'equipo';
-    const body = bodyTpl.replace(/\[nombre\]/gi, firstName).replace(/\[nota\]/gi, '');
-    window.open(`mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`, '_blank');
-    toast(`📧 Email BCC abierto — ${selected.length} destinatarios`);
+    const body = bodyTpl.replace(/\[nombre\]/gi, 'equipo').replace(/\[nota\]/gi, '');
+    window.open('mailto:?bcc='+encodeURIComponent(bcc)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body), '_blank');
+    S.dms = (S.dms||0) + selected.length; save(S); debouncedSyncPush(); refreshMiniMeta();
+    toast('📧 Email BCC abierto — '+selected.length+' destinatarios');
   }
-  S.dms = (S.dms||0) + selected.length; save(S); debouncedSyncPush(); refreshMiniMeta();
 }
 
 // ── CRM PIPELINE ──────────────────────────────────────────────────────────────
