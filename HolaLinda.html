@@ -249,7 +249,7 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 .src-toggle:active{transform:scale(.93)}
 .ftag{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
 .ftag.on{background:var(--dk);color:var(--w);border-color:var(--dk)}
-.tpl-btn{padding:7px 12px;border-radius:10px;font-size:11px;font-weight:800;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s}
+.tpl-btn{padding:11px 14px;border-radius:10px;font-size:12px;font-weight:800;background:var(--g1);color:var(--g5);border:1.5px solid var(--g2);cursor:pointer;transition:all .15s;min-height:42px}
 .tpl-btn.on{background:var(--dk);color:var(--y);border-color:var(--dk);box-shadow:0 2px 8px rgba(26,26,46,.25)}
 .tpl-btn:active{transform:scale(.96)}
 .fbadge{background:rgba(255,255,255,.18);border-radius:10px;padding:0 5px;font-size:9px;line-height:1.5}
@@ -810,6 +810,15 @@ function renderDots(err) {
   }
 }
 document.addEventListener('keydown', e => {
+  // ESC cierra modales abiertos (con auto-pausa de campaña)
+  if (e.key === 'Escape') {
+    const openModal = document.querySelector('.modal.o');
+    if (openModal) {
+      if (openModal.id === 'camp-modal') campCancel();
+      else openModal.classList.remove('o');
+      return;
+    }
+  }
   if (!document.getElementById('app').hidden) return;
   if (e.key>='0' && e.key<='9') pk(e.key);
   if (e.key==='Backspace') pdel();
@@ -1845,13 +1854,19 @@ function launchCampaign() {
   if (!selected.length) { toast('Seleccioná al menos 1 prospecto','err'); return; }
   const tpl = (document.getElementById('camp-msg')?.value || '').trim();
   if (!tpl) { toast('Escribí el mensaje primero','err'); return; }
-  const withPhone = selected.filter(p => (p.phone||'').replace(/\D/g,'').length >= 8);
-  if (!withPhone.length) { toast('Ningún seleccionado tiene teléfono válido','err'); return; }
+  // Filtrar prospects con estado terminal (venta/descartado) → avisar
+  const skipTerminal = selected.filter(p => p.estado==='venta' || p.estado==='descartado');
+  const eligible     = selected.filter(p => p.estado!=='venta' && p.estado!=='descartado');
+  if (skipTerminal.length) {
+    toast('Saltando '+skipTerminal.length+' en estado venta/descartado');
+  }
+  const withPhone = eligible.filter(p => (p.phone||'').replace(/\D/g,'').length >= 8);
+  if (!withPhone.length) { toast('Ningún seleccionado tiene teléfono válido (excluye venta/descartado)','err'); return; }
   // Inicializa estado de campaña
   campState = {
     queue:    withPhone.map(p => p.id),
     sent:     [],
-    skipped:  [],
+    skipped:  skipTerminal.map(p => p.id),
     template: tpl,
     startedAt: Date.now(),
     type:     'wa'
