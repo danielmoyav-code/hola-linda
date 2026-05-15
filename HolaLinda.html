@@ -259,6 +259,7 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 .src-badge.ml{background:#f0fdf4;color:#166534}
 .src-badge.apollo{background:#f5f3ff;color:#7c3aed}
 .src-badge.manual{background:#f0fdf4;color:#15803d}
+.src-badge.diario{background:#fef3c7;color:#92400e}
 .dq{display:flex;gap:5px;margin:5px 0 2px}
 .dq .dqi{font-size:13px;transition:opacity .15s}
 .hub-prog-box{background:var(--g1);border-radius:14px;padding:16px;text-align:center}
@@ -514,6 +515,7 @@ Ejecutiva Smart Point 2 · Mercado Pago Chile</textarea>
             <button class="src-toggle on" id="tog-maps"   onclick="toggleSource('maps')">🗺️ Google Maps</button>
             <button class="src-toggle on" id="tog-ml"     onclick="toggleSource('ml')">🏘️ OpenStreetMap</button>
             <button class="src-toggle"    id="tog-apollo" onclick="toggleSource('apollo')">🚀 Apollo.io</button>
+            <button class="src-toggle"    id="tog-diario" onclick="toggleSource('diario')">🆕 Empresas Nuevas</button>
           </div>
           <button id="hub-btn" onclick="runHubSearch()" class="btn btn-dk" style="margin-bottom:8px">🔍 Buscar en todas las fuentes</button>
           <button onclick="showAddManual()" class="btn" style="background:var(--g1);color:var(--dk);border:1.5px solid var(--g2)">✏️ Agregar prospecto (en terreno)</button>
@@ -571,6 +573,7 @@ Ejecutiva Smart Point 2 · Mercado Pago Chile</textarea>
             <button class="ftag"    id="ft-maps"   onclick="setHubFilter('maps')">🗺️ Maps <span id="fc-maps" class="fbadge">0</span></button>
             <button class="ftag"    id="ft-ml"     onclick="setHubFilter('ml')">🏘️ OSM <span id="fc-ml" class="fbadge">0</span></button>
             <button class="ftag"    id="ft-apollo" onclick="setHubFilter('apollo')">🚀 Apollo <span id="fc-apollo" class="fbadge">0</span></button>
+            <button class="ftag"    id="ft-diario" onclick="setHubFilter('diario')">🆕 Nuevas <span id="fc-diario" class="fbadge">0</span></button>
             <button class="ftag"    id="ft-phone"  onclick="setHubFilter('phone')">📞 Con Tel <span id="fc-phone" class="fbadge">0</span></button>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
@@ -1191,7 +1194,7 @@ function toggleCfg() {
 // Fuentes: Google Maps (Apify) · MercadoLibre · Apollo.io · Manual
 // ══════════════════════════════════════════════════════════════════════════════
 
-let hubSources = { maps:true, ml:true, apollo:false };
+let hubSources = { maps:true, ml:true, apollo:false, diario:false };
 let hubResults  = [];   // resultados unificados
 let hubFilter   = 'all';
 let hubSel      = new Set();
@@ -1206,7 +1209,8 @@ function toggleSource(src) {
 async function runHubSearch() {
   const tipo = (document.getElementById('hub-tipo').value||'').trim();
   const zona = (document.getElementById('hub-zona').value||'').trim();
-  if (!tipo) { toast('Ingresa el tipo de negocio 🔍','err'); return; }
+  const onlyDiario = hubSources.diario && !hubSources.maps && !hubSources.ml && !hubSources.apollo;
+  if (!tipo && !onlyDiario) { toast('Ingresa el tipo de negocio 🔍','err'); return; }
   if (!zona && hubSources.maps) { toast('Ingresa una zona para Maps 📍','err'); return; }
 
   // Reset
@@ -1221,12 +1225,13 @@ async function runHubSearch() {
   // Source progress badges
   const srcEl = document.getElementById('hub-sources-progress');
   const activeSrcs = Object.entries(hubSources).filter(([,v])=>v).map(([k])=>k);
-  srcEl.innerHTML = activeSrcs.map(s=>`<span id="sp-${s}" style="font-size:10px;background:var(--g2);color:var(--g5);padding:3px 9px;border-radius:12px;font-weight:700">${{maps:'🗺️ Maps',ml:'🏘️ OSM',apollo:'🚀 Apollo'}[s]} ⏳</span>`).join('');
+  srcEl.innerHTML = activeSrcs.map(s=>`<span id="sp-${s}" style="font-size:10px;background:var(--g2);color:var(--g5);padding:3px 9px;border-radius:12px;font-weight:700">${{maps:'🗺️ Maps',ml:'🏘️ OSM',apollo:'🚀 Apollo',diario:'🆕 Empresas'}[s]} ⏳</span>`).join('');
 
   const promises = [];
   if (hubSources.maps)   promises.push(runMapsSearch(tipo,zona));
   if (hubSources.ml)     promises.push(runMLSearch(tipo,zona));
   if (hubSources.apollo) promises.push(runApolloSearch(tipo,zona));
+  if (hubSources.diario) promises.push(runDiarioOficialSearch(tipo,zona));
 
   await Promise.allSettled(promises);
 
@@ -1257,10 +1262,14 @@ function setSrcBadge(src, txt, ok) {
 
 function addHubResults(results, source) {
   let added=0;
+  const normName = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
   results.forEach(r => {
     const phone = (r.phone||'').replace(/\D/g,'').replace(/^0+/,'');
     // Deduplicate by normalized phone
     if (phone && hubResults.some(x=>(x.phone||'').replace(/\D/g,'').replace(/^0+/,'').replace(/^56/,'') === phone.replace(/^56/,''))) return;
+    // Deduplicate by normalized name (para resultados sin teléfono o de variantes)
+    const nn = normName(r.name);
+    if (nn && nn.length > 4 && hubResults.some(x => normName(x.name) === nn)) return;
     const id = source+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'_'+(added++);
     hubResults.unshift({...r, _source:source, _id:id});
   });
@@ -1272,13 +1281,37 @@ function addHubResults(results, source) {
 }
 
 // ── Google Maps via Apify ─────────────────────────────────────────────────────
+// Variantes de búsqueda para términos ambiguos — mejora cobertura sin gastar más
+const QUERY_VARIANTS = {
+  'notaría':       ['Notaría', 'Notarías', 'Notario público', 'Estudio notarial'],
+  'notaria':       ['Notaria', 'Notarias', 'Notario publico', 'Estudio notarial'],
+  'farmacia':      ['Farmacia', 'Farmacias', 'Droguería'],
+  'peluquería':    ['Peluquería', 'Peluquerías', 'Barbería', 'Salón de belleza'],
+  'peluqueria':    ['Peluqueria', 'Peluquerias', 'Barberia', 'Salon de belleza'],
+  'restaurante':   ['Restaurante', 'Restaurantes', 'Restorán'],
+  'café':          ['Café', 'Cafetería', 'Cafés'],
+  'cafe':          ['Cafe', 'Cafeteria', 'Cafes'],
+  'gimnasio':      ['Gimnasio', 'Gym', 'Fitness center'],
+  'dentista':      ['Dentista', 'Clínica dental', 'Odontólogo'],
+  'veterinaria':   ['Veterinaria', 'Veterinario', 'Clínica veterinaria'],
+  'abogado':       ['Abogado', 'Estudio jurídico', 'Bufete'],
+  'contador':      ['Contador', 'Contabilidad', 'Estudio contable'],
+};
+function buildSearchVariants(tipo) {
+  const norm = tipo.toLowerCase().trim();
+  return QUERY_VARIANTS[norm] || [tipo];
+}
+
 async function runMapsSearch(tipo, zona) {
   setHubStatus(`🗺️ Buscando en Google Maps...`, tipo+' · '+zona);
   const token = S.apifyToken;
   if (!token) { setSrcBadge('maps','⚠ Sin API Key',false); return; }
   try {
-    const query  = `${tipo} ${zona} Chile`;
-    const body   = { searchStringsArray:[query], maxCrawledPlacesPerSearch:40, language:'es', countryCode:'cl' };
+    // Variantes: un solo run con múltiples queries dentro del array
+    const variants = buildSearchVariants(tipo);
+    const queries  = variants.map(v => `${v} ${zona} Chile`);
+    const perQuery = variants.length > 1 ? 20 : 40;
+    const body   = { searchStringsArray:queries, maxCrawledPlacesPerSearch:perQuery, language:'es', countryCode:'cl' };
     const runRes = await fetch(
       `https://api.apify.com/v2/acts/compass~crawler-google-places/runs?token=${encodeURIComponent(token)}&waitForFinish=120`,
       { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
@@ -1475,6 +1508,101 @@ async function runApolloSearch(tipo, zona) {
   } catch(e) { setSrcBadge('apollo','Error: '+e.message,false); }
 }
 
+// ── Diario Oficial — Empresas y Cooperativas nuevas ───────────────────────────
+// Scrapea las constituciones de la edición del día (CONSTITUCIÓN solamente).
+// Filtra por palabras del tipo/zona si están en el nombre o giro.
+async function runDiarioOficialSearch(tipo, zona) {
+  setHubStatus('🆕 Buscando empresas nuevas (Diario Oficial)...', tipo);
+  try {
+    // 1) Obtener fecha de hoy en formato DD-MM-YYYY (probamos hoy → ayer)
+    const tryDates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      tryDates.push(`${dd}-${mm}-${d.getFullYear()}`);
+    }
+    // 2) Buscar el HTML del Diario Oficial via CORS proxy (corsproxy.io es libre)
+    const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const tipoLc = norm(tipo);
+    const zonaLc = norm(zona);
+    let html = '', dateUsed = '', edition = '';
+    for (const fecha of tryDates) {
+      try {
+        // Sin edition para que el servidor redirija a la última de ese día
+        const url = 'https://www.diariooficial.interior.gob.cl/edicionelectronica/index.php?date='+fecha;
+        const proxied = 'https://corsproxy.io/?'+encodeURIComponent(url);
+        const r = await fetch(proxied);
+        if (!r.ok) continue;
+        const txt = await r.text();
+        const editionM = txt.match(/edition=(\d+)/);
+        if (editionM) { edition = editionM[1]; dateUsed = fecha; html = txt; break; }
+      } catch(e) {}
+    }
+    if (!edition) throw new Error('No pude obtener edición del Diario Oficial');
+    // 3) Fetch específico de la sección Empresas y Cooperativas
+    const empUrl = `https://www.diariooficial.interior.gob.cl/edicionelectronica/empresas_cooperativas.php?date=${dateUsed}&edition=${edition}`;
+    const empResp = await fetch('https://corsproxy.io/?'+encodeURIComponent(empUrl));
+    if (!empResp.ok) throw new Error('HTTP '+empResp.status);
+    const empHtml = await empResp.text();
+    // 4) Parsear filas — capturar título de sección (SA / Ltda / SpA / Cooperativa) y nombre de cada empresa
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(empHtml, 'text/html');
+    const rows = doc.querySelectorAll('table tr');
+    let currentCat = '', currentSub = '', collecting = false;
+    const items = [];
+    rows.forEach(tr => {
+      const t3 = tr.querySelector('td.title3');
+      const t4 = tr.querySelector('td.title4');
+      const t5 = tr.querySelector('td.title5');
+      if (t3) { currentCat = t3.textContent.trim(); collecting = currentCat.toUpperCase().includes('CONSTITUC'); }
+      if (t4) { /* CONSTITUCIÓN / MODIFICACIÓN / etc */ }
+      if (t5) { currentSub = t5.textContent.trim(); }
+      if (!collecting) return;
+      if (tr.classList.contains('content')) {
+        const tds = tr.querySelectorAll('td');
+        if (!tds.length) return;
+        const nameDiv = tds[0].querySelector('div');
+        const name = (nameDiv ? nameDiv.textContent : tds[0].textContent).trim().replace(/\s+/g,' ');
+        const pdfLink = tds[1]?.querySelector('a')?.href || '';
+        const cveM = pdfLink.match(/CVE-(\d+)/) || pdfLink.match(/\/(\d+)\.pdf/);
+        const cve = cveM ? cveM[1] : '';
+        if (name && name.length > 3) {
+          items.push({ name, sub: currentSub, pdfLink, cve, date: dateUsed });
+        }
+      }
+    });
+    // 5) Filtrar por tipo o zona si vienen
+    let filtered = items;
+    if (tipoLc.length > 2) {
+      filtered = filtered.filter(it => norm(it.name).includes(tipoLc) || norm(it.sub).includes(tipoLc));
+    }
+    if (zonaLc.length > 2 && filtered.length > 0) {
+      // Zona es difícil de filtrar sin PDF parsing; lo dejamos como filtro suave
+      const zonaFiltered = filtered.filter(it => norm(it.name).includes(zonaLc));
+      if (zonaFiltered.length > 0) filtered = zonaFiltered;
+    }
+    // 6) Mapear al formato del Hub
+    const results = filtered.slice(0, 40).map(it => ({
+      name: it.name,
+      phone: '',
+      _rawPhone: '',
+      address: '',
+      category: '🆕 Nueva '+(it.sub||'empresa')+' · '+it.date,
+      website: it.pdfLink,
+      mapsUrl: '',
+      rating: 0,
+      _isDiario: true,
+      _pdfLink: it.pdfLink,
+      _cve: it.cve,
+    }));
+    setSrcBadge('diario', results.length ? results.length+' nuevas ✓' : '0 — sin coincidencias', !!results.length);
+    addHubResults(results, 'diario');
+  } catch(e) {
+    setSrcBadge('diario','Error: '+e.message, false);
+  }
+}
+
 // ── On-demand Apollo enrichment ────────────────────────────────────────────────
 async function enrichWithApollo(orgName, resultId) {
   const key = S.apolloKey;
@@ -1519,7 +1647,7 @@ function renderHubResults() {
     const waMsg    = encodeURIComponent('Hola '+(p.name.split(' ')[0]||p.name)+', soy Cecilia de Mercado Pago 👋. Quería presentarles la Smart Point 2: cobra sin arriendo ni mensualidad, por $59.900. ¿Tienen 5 minutos? 💛');
     const saved    = S.prospects.some(x=>x.id===id);
     const sel      = hubSel.has(id);
-    const srcLabel = {maps:'🗺️ Maps',ml:'🏘️ OSM',apollo:'🚀 Apollo',manual:'✏️ Manual'}[p._source]||'';
+    const srcLabel = {maps:'🗺️ Maps',ml:'🏘️ OSM',apollo:'🚀 Apollo',manual:'✏️ Manual',diario:'🆕 D.Oficial'}[p._source]||'';
     const srcCls   = p._source||'maps';
     const hasData  = [p.phone,p.email,p.website,p.address];
     const quality  = hasData.filter(Boolean).length;
@@ -1568,6 +1696,8 @@ function renderHubResults() {
             ${p._rawPhone||p.phone?`<a href="tel:${p._rawPhone||p.phone}" class="ract call">📞</a>`:''}
             ${p.mapsUrl?`<a href="${p.mapsUrl}" target="_blank" class="ract maps">🗺️</a>`:''}
             ${p.linkedin?`<a href="${p.linkedin}" target="_blank" class="ract li">💼</a>`:''}
+            ${p._isDiario&&p._pdfLink?`<a href="${esc(p._pdfLink)}" target="_blank" class="ract" style="background:#fef3c7;color:#92400e">📄 PDF</a>`:''}
+            ${p._isDiario?`<a href="https://www.google.com/maps/search/${encodeURIComponent(p.name+' Chile')}" target="_blank" class="ract" style="background:#dbeafe;color:#1e40af">🔍 Buscar</a>`:''}
             ${!p.apolloEnrich&&p._source!=='apollo'?`<button class="ract" style="background:#ede9fe;color:#7c3aed" onclick="enrichWithApollo('${esc(p.org||p.name)}','${id}')">🚀 Apollo</button>`:''}
             <button class="ract save${saved?' saved':''}" id="savebtn-${id}" onclick="saveHubProspect('${id}')">
               ${saved?'⭐ Guardado':'☆ Guardar'}
@@ -1584,6 +1714,7 @@ function getHubFiltered() {
     case 'maps':   return hubResults.filter(p=>p._source==='maps');
     case 'ml':     return hubResults.filter(p=>p._source==='ml');
     case 'apollo': return hubResults.filter(p=>p._source==='apollo');
+    case 'diario': return hubResults.filter(p=>p._source==='diario');
     case 'phone':  return hubResults.filter(p=>p.phone);
     default:       return [...hubResults];
   }
@@ -1595,6 +1726,7 @@ function updateHubFilterCounts() {
   set('fc-maps',   hubResults.filter(p=>p._source==='maps').length);
   set('fc-ml',     hubResults.filter(p=>p._source==='ml').length);
   set('fc-apollo', hubResults.filter(p=>p._source==='apollo').length);
+  set('fc-diario', hubResults.filter(p=>p._source==='diario').length);
   set('fc-phone',  hubResults.filter(p=>p.phone).length);
   const withPhone = hubResults.filter(p=>p.phone).length;
   const sumEl = document.getElementById('hub-summary');
@@ -1603,7 +1735,7 @@ function updateHubFilterCounts() {
 
 function setHubFilter(f) {
   hubFilter=f;
-  ['all','maps','ml','apollo','phone'].forEach(k=>{
+  ['all','maps','ml','apollo','diario','phone'].forEach(k=>{
     const b=document.getElementById('ft-'+k); if(b) b.classList.toggle('on',k===f);
   });
   renderHubResults();
