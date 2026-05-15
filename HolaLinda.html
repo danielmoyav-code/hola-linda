@@ -1526,13 +1526,14 @@ async function runDiarioOficialSearch(tipo, zona) {
     const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
     const tipoLc = norm(tipo);
     const zonaLc = norm(zona);
+    // Proxy CORS funcional (corsproxy.io rompió en 2026)
+    const PROXY = 'https://api.allorigins.win/raw?url=';
     let html = '', dateUsed = '', edition = '';
     for (const fecha of tryDates) {
       try {
         // Sin edition para que el servidor redirija a la última de ese día
         const url = 'https://www.diariooficial.interior.gob.cl/edicionelectronica/index.php?date='+fecha;
-        const proxied = 'https://corsproxy.io/?'+encodeURIComponent(url);
-        const r = await fetch(proxied);
+        const r = await fetch(PROXY+encodeURIComponent(url));
         if (!r.ok) continue;
         const txt = await r.text();
         const editionM = txt.match(/edition=(\d+)/);
@@ -1542,7 +1543,7 @@ async function runDiarioOficialSearch(tipo, zona) {
     if (!edition) throw new Error('No pude obtener edición del Diario Oficial');
     // 3) Fetch específico de la sección Empresas y Cooperativas
     const empUrl = `https://www.diariooficial.interior.gob.cl/edicionelectronica/empresas_cooperativas.php?date=${dateUsed}&edition=${edition}`;
-    const empResp = await fetch('https://corsproxy.io/?'+encodeURIComponent(empUrl));
+    const empResp = await fetch(PROXY+encodeURIComponent(empUrl));
     if (!empResp.ok) throw new Error('HTTP '+empResp.status);
     const empHtml = await empResp.text();
     // 4) Parsear filas — capturar título de sección (SA / Ltda / SpA / Cooperativa) y nombre de cada empresa
